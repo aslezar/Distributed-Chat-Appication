@@ -11,15 +11,8 @@ import { io } from "../socketio"
 const client = new OAuth2Client()
 
 const register = async (req: Request, res: Response) => {
-    const {
-        firstName,
-        lastName,
-        email,
-        phoneNo,
-        password,
-        profileImage,
-        isVendor,
-    } = req.body
+    const { firstName, lastName, email, phoneNo, password, profileImage } =
+        req.body
 
     //data validation
     const name = firstName + " " + lastName
@@ -70,10 +63,6 @@ const register = async (req: Request, res: Response) => {
                         new: true,
                     },
                 )
-                if (user && isVendor && !user.vendorProfile)
-                    await user.makeVendor()
-                else if (user && !isVendor && user.vendorProfile)
-                    await user.removeVendor()
 
                 userId = user?._id
                 break
@@ -95,7 +84,6 @@ const register = async (req: Request, res: Response) => {
         }
     } else {
         const user = await User.create(newUser)
-        if (isVendor === true) await user.makeVendor()
         userId = user._id
     }
     if (!userId) throw new BadRequestError("User not created.")
@@ -104,8 +92,8 @@ const register = async (req: Request, res: Response) => {
         from: process.env.SMTP_EMAIL_USER,
         to: email,
         subject: "Blogmind: Email Verification",
-        text: `Thank you for registering with Blogmind! Your OTP (One-Time Password) is ${otpCode}. Please use this code to verify your email. ${isVendor ? "You are registering as a vendor." : ""}`,
-        html: `<h1>Thank you for registering with Blogmind!</h1><p>Your OTP (One-Time Password) is <strong>${otpCode}</strong>. Please use this code to verify your email.</p> ${isVendor ? "<p>You are registering as a vendor.</p>" : ""}`,
+        text: `Thank you for registering with Blogmind! Your OTP (One-Time Password) is ${otpCode}. Please use this code to verify your email." : ""}`,
+        html: `<h1>Thank you for registering with Blogmind!</h1><p>Your OTP (One-Time Password) is <strong>${otpCode}</strong>. Please use this code to verify your email.</p>" : ""}`,
     })
 
     res.status(StatusCodes.CREATED).json({
@@ -150,7 +138,6 @@ const login = async (req: Request, res: Response) => {
 
 const continueWithGoogle = async (req: Request, res: Response) => {
     const tokenId = req.body.tokenId
-    const isVendor = req.body.isVendor
 
     let payload: any = null
 
@@ -177,7 +164,6 @@ const continueWithGoogle = async (req: Request, res: Response) => {
             profileImage: picture,
             status: "active",
         })
-        if (isVendor === true) await user.makeVendor()
     }
     setAuthTokenCookie(res, user)
     res.status(StatusCodes.CREATED).json({

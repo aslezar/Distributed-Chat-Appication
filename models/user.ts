@@ -2,7 +2,6 @@ import { Schema, model } from "mongoose"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { IUser } from "../types/models"
-import VendorProfile from "./vendorProfile"
 import { UserPayload } from "../types/express"
 
 const UserSchema = new Schema<IUser>(
@@ -77,7 +76,6 @@ UserSchema.methods.generateToken = function () {
     return jwt.sign(
         {
             userId: this._id,
-            isVendor: this.vendorProfile ? true : false,
         } as UserPayload,
         process.env.JWT_SECRET as jwt.Secret,
         {
@@ -89,7 +87,6 @@ UserSchema.methods.generateSocketToken = function () {
     return jwt.sign(
         {
             userId: this._id,
-            isVendor: this.vendorProfile ? true : false,
         } as UserPayload,
         process.env.JWT_SOCKET_SECRET as jwt.Secret,
         {

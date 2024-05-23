@@ -29,8 +29,6 @@ const getMe = async (req: Request, res: Response) => {
         email: user.email,
         phoneNo: user.phoneNo,
         profileImage: user.profileImage,
-        isVendor: user.vendorProfile ? true : false,
-        vendorProfile: user.vendorProfile,
         socketToken,
     }
 
@@ -106,26 +104,4 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-const makeMeVendor = async (req: Request, res: Response) => {
-    const userId = req.user.userId
-    const user = await User.findById(userId)
-    if (!user) throw new NotFoundError("User Not Found")
-    if (user.vendorProfile)
-        throw new BadRequestError("User is already a vendor.")
-    const vendorProfile = await user.makeVendor()
-    if (!vendorProfile)
-        throw new BadRequestError("Failed to make user a vendor.")
-    res.status(StatusCodes.CREATED).json({
-        data: { vendorProfile },
-        success: true,
-        msg: "User is now a vendor.",
-    })
-}
-
-export {
-    getMe,
-    updateCompleteProfile,
-    updateProfileImage,
-    deleteProfileImage,
-    makeMeVendor,
-}
+export { getMe, updateCompleteProfile, updateProfileImage, deleteProfileImage }

@@ -25,7 +25,6 @@ export default (server: HttpServer, options: Partial<ServerOptions>) => {
 
             const userPayload: UserPayload = {
                 userId: new mongoose.Types.ObjectId(payload.userId),
-                isVendor: payload.isVendor,
             }
             ;(socket as any).user = userPayload
         } catch (error) {

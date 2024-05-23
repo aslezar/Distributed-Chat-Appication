@@ -5,13 +5,11 @@ import {
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    makeMeVendor,
 } from "../controllers/user"
 
 const router = Router()
 
 router.route("/me").get(getMe)
-router.patch("/make-me-vendor", makeMeVendor)
 router.patch("/update-profile", updateCompleteProfile)
 router
     .route("/image")
