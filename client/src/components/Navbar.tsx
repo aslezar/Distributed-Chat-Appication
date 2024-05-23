@@ -13,22 +13,29 @@ const NavBar = () => {
                 <ContactIcon className="h-6 w-6" />
                 <span className="sr-only">Chat App</span>
             </Link>
-            <nav className="ml-auto flex gap-4 sm:gap-6">
-                <ModeToggle />
+            <nav className="ml-auto flex gap-4 sm:gap-2">
                 <Button
-                    variant="outline"
+                    variant="link"
                     className="text-sm font-medium hover:underline underline-offset-4"
                     onClick={() => navigate("/#features")}
                 >
                     Features
                 </Button>
                 <Button
-                    variant="outline"
+                    variant="link"
                     className="text-sm font-medium hover:underline underline-offset-4"
                     onClick={() => navigate("/#contact")}
                 >
                     Contact
                 </Button>
+                <Button
+                    variant="default"
+                    className="text-sm font-medium hover:underline underline-offset-4"
+                    onClick={() => navigate("/sign-up")}
+                >
+                    Get Started
+                </Button>
+                <ModeToggle />
             </nav>
         </header>
     )

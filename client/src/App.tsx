@@ -17,7 +17,7 @@ import Footer from "./components/Footer"
 //Pages
 import HomePage from "./Pages/HomePage"
 // import SignIn from "./Pages/SignInPage"
-// import SignUp from "./Pages/SignUpPage"
+import SignUp from "./Pages/SignUpPage"
 // import VerifyOTP from "./Pages/VerifyOTP"
 // import ForgotPassword from "./Pages/ForgotPasswordPage"
 // import ErrorPage from "./Pages/ErrorPage"
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <HomePage /> },
             // { path: "sign-in", element: <SignIn /> },
-            // { path: "sign-up", element: <SignUp /> },
+            { path: "sign-up", element: <SignUp /> },
             // { path: "forgot-password", element: <ForgotPassword /> },
             // { path: "verify", element: <VerifyOTP /> },
             {

@@ -12,6 +12,8 @@
         "POSTHOG",
         "reduxjs",
         "Reqs",
+        "signin",
+        "signup",
         "socketio",
         "sonner",
         "Unfollow",
