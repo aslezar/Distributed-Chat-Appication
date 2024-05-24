@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import ViewProfileButton from "../components/ViewProfileButton"
+import AddChat from "../components/AddChat"
 import Chat from "../components/Chat"
 import { MessageCircle, Search } from "lucide-react"
 import { useState } from "react"
@@ -120,11 +121,8 @@ export default function ChatPage() {
                         <MessageCircle className="h-6 w-6" />
                         <span>Vibe Talk</span>
                     </Link>
-                    <div>
-                        <Button size="icon" variant="ghost">
-                            <Search className="h-5 w-5" />
-                            <span className="sr-only">Search</span>
-                        </Button>
+                    <div className="flex gap-2">
+                        <AddChat />
                         <ViewProfileButton />
                     </div>
                 </div>

@@ -9,7 +9,8 @@ import {
     Smile,
     Send,
 } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import EmojiPicker from "../components/EmojiPicker"
 
 const msg = [
     {
@@ -92,6 +93,22 @@ function InputMessage({
 }: {
     handleSendMessage: (e: React.FormEvent<HTMLFormElement>) => void
 }) {
+    const inputRef = useRef<HTMLInputElement>(null)
+    const handleAddEmoji = (emoji: string) => {
+        if (inputRef.current) {
+            console.log(inputRef.current.selectionStart)
+            const value = inputRef.current.value
+            const start = inputRef.current.selectionStart ?? 0
+            const end = inputRef.current.selectionEnd ?? 0
+            inputRef.current.value =
+                value.substring(0, start) + emoji + value.substring(end)
+            //focus at the end of the emoji
+            inputRef.current.selectionStart = start + emoji.length
+            inputRef.current.selectionEnd = start + emoji.length
+            inputRef.current.focus()
+        }
+    }
+
     return (
         <form
             className="flex h-[60px] items-center justify-between border-t border-gray-200 px-4 dark:border-gray-800"
@@ -102,13 +119,15 @@ function InputMessage({
                 placeholder="Type your message..."
                 type="text"
                 name="message"
+                ref={inputRef}
             />
-            <Button size="icon" variant="ghost">
+            <Button size="icon" variant="ghost" type="button">
                 <Paperclip className="h-5 w-5" />
                 <span className="sr-only">Attach File</span>
             </Button>
-            <Button size="icon" variant="ghost">
-                <Smile className="h-5 w-5" />
+            <Button size="icon" variant="ghost" type="button">
+                {/* <Smile className="h-5 w-5" />*/}
+                <EmojiPicker onChange={handleAddEmoji} />
                 <span className="sr-only">Add Emoji</span>
             </Button>
             <Button size="icon" variant="ghost" type="submit">
