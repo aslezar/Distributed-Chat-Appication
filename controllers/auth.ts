@@ -59,7 +59,7 @@ const register = async (req: Request, res: Response) => {
         to: email,
         subject: "Blogmind: Email Verification",
         text: `Thank you for registering with Blogmind! Your OTP (One-Time Password) is ${otpCode}. Please use this code to verify your email." : ""}`,
-        html: `<h1>Thank you for registering with Blogmind!</h1><p>Your OTP (One-Time Password) is <strong>${otpCode}</strong>. Please use this code to verify your email.</p>" : ""}`,
+        html: `<h1>Thank you for registering with Blogmind!</h1><p>Your OTP (One-Time Password) is <strong>${otpCode}</strong>. Please use this code to verify your email.</p>`,
     })
 
     res.status(StatusCodes.CREATED).json({
