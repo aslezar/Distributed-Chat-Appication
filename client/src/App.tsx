@@ -4,7 +4,6 @@ import {
     RouterProvider,
     ScrollRestoration,
     createBrowserRouter,
-    Navigate,
 } from "react-router-dom"
 import { useAppDispatch, useAppSelector } from "./hooks"
 import { loadUser } from "./features/userSlice"
@@ -16,12 +15,10 @@ import Footer from "./components/Footer"
 
 //Pages
 import HomePage from "./Pages/HomePage"
-// import SignIn from "./Pages/SignInPage"
 import SignUp from "./Pages/SignUpPage"
-// import VerifyOTP from "./Pages/VerifyOTP"
-// import ForgotPassword from "./Pages/ForgotPasswordPage"
-// import ErrorPage from "./Pages/ErrorPage"
-// import ProfilePage from "./Pages/ProfilePage"
+import ForgotPage from "./Pages/ForgetPage"
+import ErrorPage from "./Pages/ErrorPage"
+import ChatPage from "./Pages/ChatPage"
 
 const Layout = () => {
     return (
@@ -37,24 +34,24 @@ const ProtectedRoute = () => {
     const { loading, isAuthenticated } = useAppSelector((state) => state.user)
 
     if (loading) return <Loader />
-    if (!isAuthenticated) return <Navigate to="/sign-in" />
+    // if (!isAuthenticate`d) return <Navigate to="/sign-up" />
     return <Outlet />
 }
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Layout />,
-        // errorElement: <ErrorPage />,
+        // element: <Layout />,
+        errorElement: <ErrorPage />,
         children: [
             { index: true, element: <HomePage /> },
-            // { path: "sign-in", element: <SignIn /> },
             { path: "sign-up", element: <SignUp /> },
-            // { path: "forgot-password", element: <ForgotPassword /> },
-            // { path: "verify", element: <VerifyOTP /> },
+            { path: "forgot-password", element: <ForgotPage /> },
             {
-                element: <ProtectedRoute />,
-                // children: [{ path: "profile", element: <ProfilePage /> }],
+                path: "chat",
+                element: <ChatPage />,
+                // element: <ProtectedRoute />,
+                // children: [{ index: true, element: <ChatPage /> }],
             },
         ],
     },

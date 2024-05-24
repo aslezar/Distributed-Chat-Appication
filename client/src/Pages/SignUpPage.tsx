@@ -1,5 +1,4 @@
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import { Separator } from "@/components/ui/separator"
@@ -10,6 +9,7 @@ import { useAppSelector } from "../hooks"
 
 export default function Component() {
     const { isAuthenticated, loading } = useAppSelector((state) => state.user)
+    console.log(isAuthenticated, loading)
 
     const handleLoginButton = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -17,11 +17,6 @@ export default function Component() {
     const handleSignUpButton = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
     }
-    // useEffect(() => {
-    //     if (!loading && isAuthenticated) {
-    //         navigate("/events")
-    //     }
-    // }, [loading, isAuthenticated])
 
     return (
         <div className="w-full lg:grid lg:min-h-[800px] lg:grid-cols-2 xl:min-h-[900px]">
@@ -56,39 +51,33 @@ export default function Component() {
                                 className="space-y-4"
                                 onSubmit={handleLoginButton}
                             >
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        placeholder="johndoe@gmail.com"
-                                        required
-                                        type="email"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="flex items-center">
-                                        <Label htmlFor="password">
-                                            Password
-                                        </Label>
-                                        <Link
-                                            className="ml-auto inline-block text-sm underline"
-                                            to="/forgot-password"
-                                        >
-                                            Forgot Password?
-                                        </Link>
-                                    </div>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        required
-                                        placeholder="********"
-                                        type="password"
-                                    />
-                                </div>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="Email"
+                                    required
+                                    className="space-y-2"
+                                />
+
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    placeholder="Password"
+                                    required
+                                    className="space-y-2"
+                                />
+
                                 <Button className="w-full" type="submit">
                                     {loading ? "Loading..." : "Login"}
                                 </Button>
+                                <Link
+                                    className="ml-auto inline-block text-sm underline"
+                                    to="/forgot-password"
+                                >
+                                    Forgot Password?
+                                </Link>
                             </form>
                         </TabsContent>
                         <TabsContent value="signup">
@@ -97,33 +86,30 @@ export default function Component() {
                                 onSubmit={handleSignUpButton}
                             >
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Full Name</Label>
                                     <Input
                                         id="name"
                                         name="name"
-                                        placeholder="John Doe"
-                                        required
                                         type="text"
+                                        placeholder="Name"
+                                        required
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
                                     <Input
                                         id="email"
                                         name="email"
-                                        placeholder="johndoe@gmail.com"
-                                        required
                                         type="email"
+                                        placeholder="Email"
+                                        required
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
                                     <Input
                                         id="password"
                                         name="password"
-                                        placeholder="********"
-                                        required
                                         type="password"
+                                        placeholder="Password"
+                                        required
                                     />
                                 </div>
                                 <Button className="w-full" type="submit">

@@ -206,6 +206,8 @@ export const verification =
     }
 
 export const loadUser = () => async (dispatch: Dispatch) => {
+    return dispatch(userSlice.actions.SET_LOADING_FALSE())
+
     const isLoggedIn = document.cookie.split(";").some((cookie) => {
         const [key, _value] = cookie.split("=")
         if (key.trim() === "userId") return true
