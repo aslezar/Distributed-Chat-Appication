@@ -29,7 +29,7 @@ const ContinueWithGoogleButton = () => {
 
     React.useEffect(() => {
         if (!loading && isAuthenticated) {
-            navigate("/events")
+            navigate("/")
         }
     }, [loading, isAuthenticated, navigate])
 

@@ -1,16 +1,10 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import {
-    EllipsisVertical,
-    Phone,
-    Video,
-    Paperclip,
-    Smile,
-    Send,
-} from "lucide-react"
+import { Phone, Video, Paperclip, Send } from "lucide-react"
 import { useRef, useState } from "react"
 import EmojiPicker from "../components/EmojiPicker"
+import ChatInfo from "./ChatInfo"
 
 const msg = [
     {
@@ -80,8 +74,7 @@ function ChatProfileBar() {
                     <span className="sr-only">Voice Call</span>
                 </Button>
                 <Button size="icon" variant="ghost">
-                    <EllipsisVertical className="h-5 w-5" />
-                    <span className="sr-only">More Options</span>
+                    <ChatInfo />
                 </Button>
             </div>
         </div>
@@ -128,7 +121,6 @@ function InputMessage({
             <Button size="icon" variant="ghost" type="button">
                 {/* <Smile className="h-5 w-5" />*/}
                 <EmojiPicker onChange={handleAddEmoji} />
-                <span className="sr-only">Add Emoji</span>
             </Button>
             <Button size="icon" variant="ghost" type="submit">
                 <Send className="h-5 w-5" />
@@ -196,7 +188,11 @@ function MyMessage({ message }: { message: (typeof msg)[0] }) {
     )
 }
 
-export default function Chat() {
+export default function Chat({
+    chatSelected,
+}: {
+    chatSelected: string | null
+}) {
     const [messages, setMessages] = useState(msg)
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -222,6 +218,17 @@ export default function Chat() {
             console.log(error)
         }
     }
+    if (!chatSelected)
+        return (
+            <div className="flex flex-col max-h-full">
+                {/* show random image from unsplash*/}
+                <img
+                    src="./random.jpg"
+                    alt="random"
+                    className="object-cover w-full h-full"
+                />
+            </div>
+        )
     return (
         <div className="flex flex-col max-h-full">
             <ChatProfileBar />

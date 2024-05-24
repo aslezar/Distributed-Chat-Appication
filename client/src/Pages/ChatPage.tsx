@@ -1,34 +1,67 @@
 import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import ViewProfileButton from "../components/ViewProfileButton"
 import AddChat from "../components/AddChat"
 import Chat from "../components/Chat"
-import { MessageCircle, Search } from "lucide-react"
+import {
+    MessageCircle,
+    PhoneIncoming,
+    PhoneMissed,
+    PhoneOutgoing,
+    Video,
+    Phone,
+} from "lucide-react"
 import { useState } from "react"
+
+function randomInt(a: number, b: number) {
+    return Math.floor(Math.random() * (b - a + 1)) + a
+}
+
+const enum CallType {
+    Missed = "Missed call",
+    Incoming = "Incoming call",
+    Outgoing = "Outgoing call",
+}
 
 const chatProfile = [
     {
         _id: "1",
+        senderId: "1",
         name: "John Doe",
         message: "Hey, how's it going?",
         time: "2:30 PM",
-        profileImage: "/placeholder-avatar.jpg",
+        isGroup: false,
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
     },
     {
         _id: "2",
+        senderId: "8",
         name: "Jane Smith",
         message: "Did you see the new design?",
         time: "11:45 AM",
-        profileImage: "/placeholder-avatar.jpg",
+        isGroup: false,
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
     },
     {
         _id: "3",
+        senderId: "1",
         name: "Design Team",
         message: "New design review at 3pm",
         time: "9:00 AM",
-        profileImage: "/placeholder-avatar.jpg",
+        isGroup: true,
+        senderName: "John Doe",
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
+    },
+    {
+        _id: "4",
+        senderId: "8",
+        name: "Design Team",
+        message: "New design review at 3pm. I'll be there!",
+        time: "9:00 AM",
+        isGroup: true,
+        senderName: "John Doe",
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
     },
 ]
 
@@ -36,23 +69,26 @@ const callsProfile = [
     {
         _id: "1",
         name: "John Doe",
-        type: "Missed call",
+        type: CallType.Outgoing,
         time: "2:30 PM",
-        profileImage: "/placeholder-avatar.jpg",
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
+        isVideoCall: true,
     },
     {
         _id: "2",
         name: "Jane Smith",
-        type: "Incoming call",
+        type: CallType.Missed,
         time: "11:45 AM",
-        profileImage: "/placeholder-avatar.jpg",
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
+        isVideoCall: false,
     },
     {
         _id: "3",
         name: "Design Team",
-        type: "Incoming call",
+        type: CallType.Incoming,
         time: "9:00 AM",
-        profileImage: "/placeholder-avatar.jpg",
+        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
+        isVideoCall: true,
     },
 ]
 
@@ -69,22 +105,50 @@ function CallProfile({ profile }: { profile: (typeof callsProfile)[0] }) {
                         .substring(0, 2)}
                 </AvatarFallback>
             </Avatar>
+
             <div className="flex-1">
                 <div className="font-medium">John Doe</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {profile.type}
+                <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    {
+                        {
+                            [CallType.Missed]: (
+                                <PhoneMissed className="text-red-500 dark:text-red-400 h-4 w-4" />
+                            ),
+                            [CallType.Incoming]: (
+                                <PhoneIncoming className="text-green-500 dark:text-green-400 h-4 w-4" />
+                            ),
+                            [CallType.Outgoing]: (
+                                <PhoneOutgoing className="text-blue-500 dark:text-blue-400 h-4 w-4" />
+                            ),
+                        }[profile.type]
+                    }
+                    {profile.time}
                 </div>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-                {profile.time}
+                {profile.isVideoCall ? (
+                    <Video className="h-4 w-4 text-green-500 dark:text-green-400" />
+                ) : (
+                    <Phone className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                )}
             </div>
         </div>
     )
 }
 
-function ChatProfile({ profile }: { profile: (typeof chatProfile)[0] }) {
+function ChatProfile({
+    profile,
+    selectChat,
+}: {
+    profile: (typeof chatProfile)[0]
+    selectChat: () => void
+}) {
+    const myId = "1"
     return (
-        <div className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700">
+        <button
+            className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+            onClick={selectChat}
+        >
             <Avatar>
                 <AvatarImage alt="John Doe" src={profile.profileImage} />
                 <AvatarFallback>
@@ -97,19 +161,28 @@ function ChatProfile({ profile }: { profile: (typeof chatProfile)[0] }) {
             </Avatar>
             <div className="flex-1">
                 <div className="font-medium">John Doe</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    {profile.senderId === myId ? (
+                        <span className="font-semibold">You: </span>
+                    ) : profile.isGroup ? (
+                        <span className="font-semibold">
+                            {profile.senderName}:{" "}
+                        </span>
+                    ) : null}
                     {profile.message}
                 </div>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
                 {profile.time}
             </div>
-        </div>
+        </button>
     )
 }
 
 export default function ChatPage() {
-    const [chatSelected, setChatSelected] = useState(0)
+    const [chatSelected, setChatSelected] = useState<null | string>(null)
+    console.log(chatSelected)
+
     return (
         <div className="grid h-screen w-full grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
             <div className="border-r border-gray-200 dark:border-gray-800">
@@ -150,6 +223,9 @@ export default function ChatPage() {
                                 <ChatProfile
                                     key={profile._id}
                                     profile={profile}
+                                    selectChat={() =>
+                                        setChatSelected(profile._id)
+                                    }
                                 />
                             ))}
                         </div>
@@ -166,7 +242,7 @@ export default function ChatPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-            <Chat />
+            <Chat chatSelected={chatSelected} />
         </div>
     )
 }

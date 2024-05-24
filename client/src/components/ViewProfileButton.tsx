@@ -12,8 +12,11 @@ import { Button } from "@/components/ui/button"
 import { CardHeader, CardFooter } from "@/components/ui/card"
 import { Camera, Trash, User } from "lucide-react"
 import ModeToggle from "./MoodToggle"
+import { useAppDispatch } from "../hooks"
+import { logout } from "../features/userSlice"
 
 export default function ViewProfileButton() {
+    const dispatch = useAppDispatch()
     return (
         <Dialog>
             <DialogTrigger>
@@ -57,10 +60,18 @@ export default function ViewProfileButton() {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     jared@example.com
                                 </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    9876543210
+                                </p>
                             </div>
                         </CardHeader>
                         <CardFooter className="flex justify-end p-4 gap-4">
-                            <Button variant="outline">Log Out</Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => dispatch(logout())}
+                            >
+                                Log Out
+                            </Button>
                             <Button>Save Changes</Button>
                         </CardFooter>
                     </DialogDescription>

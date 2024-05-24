@@ -11,82 +11,48 @@ import { io } from "../socketio"
 const client = new OAuth2Client()
 
 const register = async (req: Request, res: Response) => {
-    const { firstName, lastName, email, phoneNo, password, profileImage } =
-        req.body
+    const { name, email } = req.body
 
     //data validation
-    const name = firstName + " " + lastName
     if (!name || !email) throw new BadRequestError("Please provide all details")
-    if (!password) throw new BadRequestError("Please provide password")
-
-    const userExist: IUser | null = await User.findOne({ email }) // Using findOne
-
-    if (userExist && userExist.status === "active") {
-        return res.status(StatusCodes.CONFLICT).json({
-            success: false,
-            msg: "User with this email already exists",
-        }) // Conflict status
-    }
-    if (userExist && userExist.status === "blocked") {
-        return res.status(StatusCodes.FORBIDDEN).json({
-            success: false,
-            msg: "User with this email is blocked.",
-        }) // Forbidden status
-    }
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
-
     const otp: OTP = {
         value: otpCode,
         expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     }
 
-    const newUser = {
-        name,
-        email,
-        phoneNo,
-        password,
-        profileImage,
-        status: "inactive",
-        otp,
-    }
-
-    let userId
+    const userExist = await User.findOne({ email }) // Using findOne
 
     if (userExist) {
         switch (userExist.status) {
             case "inactive":
-                const user = await User.findByIdAndUpdate(
-                    userExist._id,
-                    newUser,
-                    {
-                        new: true,
-                    },
-                )
-
-                userId = user?._id
+                if (userExist.name !== name) {
+                    userExist.name = name
+                }
+                userExist.otp = otp
+                await userExist.save()
                 break
-
             case "blocked":
                 return res.status(StatusCodes.FORBIDDEN).json({
                     success: false,
                     msg: "User with this email is blocked.",
                 }) // Forbidden status
-
             case "active":
                 return res.status(StatusCodes.CONFLICT).json({
                     success: false,
                     msg: "User with this email already exists",
                 }) // Conflict status
-
             default:
                 break
         }
     } else {
-        const user = await User.create(newUser)
-        userId = user._id
+        const user = await User.create({
+            name,
+            email,
+            otp,
+        })
     }
-    if (!userId) throw new BadRequestError("User not created.")
 
     await SendMail({
         from: process.env.SMTP_EMAIL_USER,
@@ -97,9 +63,6 @@ const register = async (req: Request, res: Response) => {
     })
 
     res.status(StatusCodes.CREATED).json({
-        data: {
-            userId: userId,
-        },
         success: true,
         msg: "OTP sent to your email. Please verify your email.",
     })
@@ -172,18 +135,31 @@ const continueWithGoogle = async (req: Request, res: Response) => {
     })
 }
 
-const forgotPasswordSendOtp = async (req: Request, res: Response) => {
+const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body
     if (!email) throw new BadRequestError("Please provide email")
+
     const user = await User.findOne({ email })
     if (!user) throw new UnauthenticatedError("Email Not Registered.")
+
+    if (user.status === "blocked")
+        return res.status(StatusCodes.FORBIDDEN).json({
+            success: false,
+            msg: "User with this email is blocked.",
+        }) // Forbidden status
+
+    //generate OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
     const otp: OTP = {
         value: otpCode,
         expires: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     }
+
+    //save otp to user
     user.otp = otp
     await user.save()
+
+    //send otp to email
     await SendMail({
         from: process.env.SMTP_EMAIL_USER,
         to: email,
@@ -197,59 +173,33 @@ const forgotPasswordSendOtp = async (req: Request, res: Response) => {
     })
 }
 
-const forgotPasswordVerifyOtp = async (req: Request, res: Response) => {
-    const { otp, email, password } = req.body as {
-        otp: string
-        email: string
-        password: string
-    }
-    if (!otp) throw new BadRequestError("Please provide OTP")
+const verifyOtp = async (req: Request, res: Response) => {
+    const { otp, email, password } = req.body
+
+    if (!otp || !email || !password)
+        throw new BadRequestError("Please provide all details")
+
     const user = await User.findOne({ email, "otp.value": otp })
     if (!user) throw new UnauthenticatedError("Invalid OTP.")
+    if (user.status === "blocked")
+        throw new UnauthenticatedError("User is blocked.")
+
     if (user.otp && user.otp.expires < new Date()) {
         user.otp = undefined
-        throw new UnauthenticatedError("OTP Expired.Please try again.")
+        await user.save()
+        throw new UnauthenticatedError("OTP Expired. Please try again.")
     }
+
     user.otp = undefined
     user.password = password
+    user.status = "active"
     await user.save()
+
     setAuthTokenCookie(res, user)
+
     res.status(StatusCodes.CREATED).json({
         success: true,
         msg: "Password Changed Successfully",
-    })
-}
-
-const verifyEmail = async (req: Request, res: Response) => {
-    const { otp, userId } = req.body as { otp: string; userId: string }
-    if (!otp) throw new BadRequestError("Please provide OTP")
-
-    const user = await User.findById(userId)
-    if (!user) throw new UnauthenticatedError("User Not Found")
-
-    if (user.status === "active")
-        throw new UnauthenticatedError("User is already active.")
-
-    if (user.status === "blocked")
-        throw new UnauthenticatedError(
-            "User is blocked. Please Reach out to support.",
-        )
-
-    if (!user.otp) throw new UnauthenticatedError("OTP Not Found")
-    if (user.otp.value !== otp.toString())
-        throw new UnauthenticatedError("Wrong OTP.")
-
-    if (user.otp && user.otp.expires < new Date()) {
-        user.otp = undefined
-        throw new UnauthenticatedError("OTP Expired. Please register again.")
-    }
-    user.status = "active"
-    user.otp = undefined
-    await user.save()
-    setAuthTokenCookie(res, user)
-    res.status(StatusCodes.CREATED).json({
-        success: true,
-        msg: "User Registered Successfully",
     })
 }
 
@@ -275,8 +225,7 @@ export {
     register,
     login,
     continueWithGoogle,
-    forgotPasswordSendOtp,
-    forgotPasswordVerifyOtp,
-    verifyEmail,
+    forgotPassword,
+    verifyOtp,
     signOut,
 }

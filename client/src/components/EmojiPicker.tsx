@@ -6,11 +6,14 @@ import {
 import { SmileIcon } from "lucide-react"
 import Picker from "@emoji-mart/react"
 import data from "@emoji-mart/data"
+import { useTheme } from "../context/ThemeContext"
 
 interface EmojiPickerProps {
     onChange: (value: string) => void
 }
 const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
+    const { theme } = useTheme()
+
     return (
         <Popover>
             <PopoverTrigger>
@@ -19,7 +22,7 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
             <PopoverContent className="w-full">
                 <Picker
                     emojiSize={18}
-                    theme="light"
+                    theme={theme}
                     data={data}
                     maxFrequentRows={1}
                     onEmojiSelect={(emoji: any) => onChange(emoji.native)}

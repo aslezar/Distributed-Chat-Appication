@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Link } from "react-router-dom"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import ContinueWithGoogleButton from "../components/ContinueWithGoogleButton"
+import ContinueWithGoogleButton from "./ContinueWithGoogleButton"
 import {
     InputOTP,
     InputOTPGroup,

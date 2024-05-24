@@ -43,12 +43,8 @@ const UserSchema = new Schema<IUser>(
             default: "inactive",
         },
         otp: {
-            value: {
-                type: String,
-            },
-            expires: {
-                type: Date,
-            },
+            value: String,
+            expires: Date,
         },
     },
     {

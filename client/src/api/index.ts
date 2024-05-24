@@ -1,11 +1,6 @@
 import axios from "axios"
 import toast from "react-hot-toast"
-import {
-    LoginType,
-    SignUpType,
-    UserType,
-    ForgotPasswordType,
-} from "../definitions"
+import { LoginType, SignUpType, UserType, VerifyOtp } from "../definitions"
 
 /*
  ********************** Configuring Axios **********************
@@ -24,7 +19,7 @@ API.interceptors.request.use(function (config) {
     if (!isPublicRoute) {
         //if there is cookie with named 'userId' then user is logged in
         const isLoggedIn = document.cookie.split(";").some((cookie) => {
-            const [key, _value] = cookie.split("=")
+            const [key, _] = cookie.split("=")
             if (key.trim() === "userId") return true
             return false
         })
@@ -69,11 +64,6 @@ API.interceptors.response.use(
     },
 )
 
-interface VerifyOtpParams {
-    userId: UserType["userId"]
-    otp: string
-}
-
 /*
  ********************** Sign In and Sign Up **********************
  */
@@ -81,20 +71,19 @@ export const signIn = (login: LoginType) => API.post("/auth/sign-in", login)
 export const signUp = (signup: SignUpType) => API.post("/auth/sign-up", signup)
 export const signInGoogle = (tokenId: string) =>
     API.post("/auth/sign-in/google", { tokenId })
-export const forgotPasswordSendOtpApi = (email: string) =>
-    API.post("/auth/forgot-password/send-otp", { email })
-export const forgotPasswordVerifyOtpApi = (
-    forgotPasswordValues: ForgotPasswordType,
-) => API.post("/auth/forgot-password/verify-otp", forgotPasswordValues)
-export const verifyOtp = (verifyOtpParams: VerifyOtpParams) =>
-    API.post("/auth/verify", verifyOtpParams)
-export const signInToken = () => API.get("/user/me")
+
+export const forgotPassword = (email: string) =>
+    API.post("/auth/forgot-password", { email })
+export const verifyOtp = (verifyOtpParams: VerifyOtp) =>
+    API.post("/auth/verify-otp", verifyOtpParams)
+
 export const signOut = () => API.post("/auth/sign-out")
 
 /*
  ********************** User Requests **********************
  */
 
+export const getMe = () => API.get("/user/me")
 export const updateProfile = (userData: UserType) => {
     const { name } = userData
     return API.patch("/user/update-profile", {

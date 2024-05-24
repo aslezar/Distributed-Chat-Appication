@@ -3,7 +3,6 @@ import AuthMiddleware from "../middleware/auth"
 import AuthRouter from "./auth"
 import UserRouter from "./user"
 import SearchRouter from "./search"
-import EventRouter from "./event"
 
 const router = Router()
 

@@ -6,24 +6,14 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { CardHeader, CardFooter } from "@/components/ui/card"
-import { Camera, Trash, UserRoundPlus } from "lucide-react"
-import ModeToggle from "./MoodToggle"
+import { UserRoundPlus } from "lucide-react"
 
 export default function AddChat() {
     return (
         <Dialog>
             <DialogTrigger>
-                <Button
-                    variant="outline"
-                    className="text-sm font-medium hover:underline underline-offset-4"
-                >
-                    <UserRoundPlus className="h-6 w-6" />
-                    <span className="sr-only">Add Chat</span>
-                </Button>
+                <UserRoundPlus className="h-6 w-6" />
+                <span className="sr-only">Add Chat</span>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

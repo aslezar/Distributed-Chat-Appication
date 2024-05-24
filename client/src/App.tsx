@@ -10,17 +10,17 @@ import { loadUser } from "./features/userSlice"
 
 //Components
 import Navbar from "./components/Navbar"
-import Loader from "./components/Loader"
 import Footer from "./components/Footer"
 
 //Pages
 import HomePage from "./Pages/HomePage"
 import SignUp from "./Pages/SignUpPage"
-import ForgotPage from "./Pages/ForgetPage"
 import ErrorPage from "./Pages/ErrorPage"
 import ChatPage from "./Pages/ChatPage"
 
 const Layout = () => {
+    const { isAuthenticated } = useAppSelector((state) => state.user)
+    if (isAuthenticated) return <Outlet />
     return (
         <div className="flex flex-col min-h-[100dvh]">
             <Navbar />
@@ -30,30 +30,27 @@ const Layout = () => {
         </div>
     )
 }
-const ProtectedRoute = () => {
-    const { loading, isAuthenticated } = useAppSelector((state) => state.user)
 
-    if (loading) return <Loader />
-    // if (!isAuthenticate`d) return <Navigate to="/sign-up" />
-    return <Outlet />
+const MainRoute = () => {
+    const { isAuthenticated } = useAppSelector((state) => state.user)
+    return isAuthenticated ? <ChatPage /> : <HomePage />
 }
 
 const router = createBrowserRouter([
     {
         path: "/",
-        // element: <Layout />,
-        errorElement: <ErrorPage />,
+        element: <Layout />,
         children: [
-            { index: true, element: <HomePage /> },
-            { path: "sign-up", element: <SignUp /> },
-            { path: "forgot-password", element: <ForgotPage /> },
             {
-                path: "chat",
-                element: <ChatPage />,
-                // element: <ProtectedRoute />,
-                // children: [{ index: true, element: <ChatPage /> }],
+                index: true,
+                element: <MainRoute />,
             },
+            { path: "sign-up", element: <SignUp /> },
         ],
+    },
+    {
+        path: "/*",
+        element: <ErrorPage />,
     },
 ])
 

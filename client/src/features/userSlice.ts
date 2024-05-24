@@ -1,37 +1,25 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit"
 import { RootState } from "../store"
 import toast from "react-hot-toast"
-import {
-    ForgotPasswordType,
-    LoginType,
-    SignUpType,
-    UserType,
-} from "../definitions"
+import { LoginType, UserType, VerifyOtp } from "../definitions"
 import {
     signIn,
-    signUp,
     signInGoogle,
-    signInToken,
+    getMe,
     signOut,
     verifyOtp,
-    forgotPasswordSendOtpApi,
-    forgotPasswordVerifyOtpApi,
 } from "../api/index.ts"
 
 interface CounterState {
     loading: boolean
     isAuthenticated: boolean
     user: UserType | null
-    verificationRequired: boolean
-    verificationUserID: UserType["userId"] | string
 }
 
 const initialState: CounterState = {
     loading: true,
     isAuthenticated: false,
     user: null,
-    verificationRequired: false,
-    verificationUserID: "",
 }
 
 export const userSlice = createSlice({
@@ -41,8 +29,6 @@ export const userSlice = createSlice({
         SET_USER: (state, action) => {
             // console.log(action.payload)
             state.isAuthenticated = true
-            state.verificationRequired = false
-            state.verificationUserID = ""
             state.user = { ...state.user, ...action.payload }
         },
         SET_LOADING: (state) => {
@@ -56,15 +42,9 @@ export const userSlice = createSlice({
             console.log("logout")
             state.isAuthenticated = false
             state.user = null
-            verificationRequired: false
-            verificationUserID: ""
         },
         UPDATE_NAME: (state, action) => {
             if (state.user) state.user.name = action.payload
-        },
-        SET_VERIFICATION_REQUIRED: (state, action) => {
-            state.verificationUserID = action.payload
-            state.verificationRequired = true
         },
     },
 })
@@ -73,8 +53,7 @@ export const logout = () => async (dispatch: Dispatch) => {
     toast.loading("Logging out", { id: "logout" })
     dispatch(userSlice.actions.SET_LOADING())
     signOut()
-        .then((_res) => {
-            // console.log(_res)
+        .then(() => {
             dispatch(userSlice.actions.LOGOUT_USER())
             toast.success("Logged out")
         })
@@ -92,42 +71,10 @@ export const login = (loginValues: LoginType) => async (dispatch: any) => {
 
     dispatch(userSlice.actions.SET_LOADING())
     signIn(loginValues)
-        .then((_res: any) => {
-            // console.log(_res)
-            dispatch(loadUser())
-        })
-        .catch((err) => {
-            console.log(err)
-        })
-        .finally(() => {
-            dispatch(userSlice.actions.SET_LOADING_FALSE())
-        })
+        .then(() => dispatch(loadUser()))
+        .catch((err) => console.log(err))
+        .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
 }
-
-export const register =
-    (signupValues: SignUpType) => async (dispatch: Dispatch) => {
-        toast.loading("Registering", { id: "register" })
-        dispatch(userSlice.actions.SET_LOADING())
-
-        signUp(signupValues)
-            .then((_res) => {
-                // console.log(_res)
-
-                const id = _res.data.userId
-                const data = dispatch(
-                    userSlice.actions.SET_VERIFICATION_REQUIRED(id),
-                )
-                console.log(data)
-                toast.success("Email Sent", { id: "register" })
-            })
-            .catch((err) => {
-                console.log(err)
-                toast.dismiss("register")
-            })
-            .finally(() => {
-                dispatch(userSlice.actions.SET_LOADING_FALSE())
-            })
-    }
 
 export const loginGoogle = (token: string) => async (dispatch: any) => {
     dispatch(userSlice.actions.SET_LOADING())
@@ -137,77 +84,19 @@ export const loginGoogle = (token: string) => async (dispatch: any) => {
         .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
 }
 
-export const forgotPasswordSendOtp =
-    (forgotPasswordValues: ForgotPasswordType, setPage: any) =>
-    async (dispatch: any) => {
-        toast.loading("Sending OTP", { id: "forgotPassword" })
-        dispatch(userSlice.actions.SET_LOADING())
-        const { email } = forgotPasswordValues
-        forgotPasswordSendOtpApi(email)
-            .then((_res) => {
-                console.log(_res)
-                toast.success("OTP Sent", { id: "forgotPassword" })
-                setPage(1)
-            })
-            .catch((err) => {
-                console.log(err)
-                toast.dismiss("forgotPassword")
-            })
-            .finally(() => {
-                dispatch(userSlice.actions.SET_LOADING_FALSE())
-            })
-    }
-
-export const forgotPasswordVerifyOtp =
-    (forgotPasswordValues: ForgotPasswordType) => async (dispatch: any) => {
-        toast.loading("Verifying OTP", { id: "forgotPassword" })
-        dispatch(userSlice.actions.SET_LOADING())
-        forgotPasswordVerifyOtpApi(forgotPasswordValues)
-            .then((_res: any) => {
-                // console.log(_res)
-                toast.success("Password changed successfully", {
-                    id: "forgotPassword",
-                })
-                dispatch(loadUser())
-            })
-            .catch((err) => {
-                console.log(err)
-                toast.dismiss("forgotPassword")
-            })
-            .finally(() => {
-                dispatch(userSlice.actions.SET_LOADING_FALSE())
-            })
-    }
-
 export const verification =
-    (otp: string) => async (dispatch: any, getState: any) => {
-        const verificationRequired = getState().user.verificationRequired
-        if (!verificationRequired) return toast.error("Something went wrong.")
-
-        const userId = getState().user.verificationUserID
-        if (!userId) return toast.error("User Not Found")
-
-        toast.loading("Verifying", { id: "verification" })
+    (verifyOtpParams: VerifyOtp) => async (dispatch: any) => {
         dispatch(userSlice.actions.SET_LOADING())
-        verifyOtp({ userId, otp })
-            .then((_res: any) => {
-                // console.log(_res)
-
+        verifyOtp(verifyOtpParams)
+            .then(() => {
                 dispatch(loadUser())
-                toast.success("Registered Successfully", { id: "verification" })
+                localStorage.removeItem("email")
             })
-            .catch((err) => {
-                console.log(err)
-                toast.dismiss("verification")
-            })
-            .finally(() => {
-                dispatch(userSlice.actions.SET_LOADING_FALSE())
-            })
+            .catch((err) => console.log(err))
+            .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
     }
 
 export const loadUser = () => async (dispatch: Dispatch) => {
-    return dispatch(userSlice.actions.SET_LOADING_FALSE())
-
     const isLoggedIn = document.cookie.split(";").some((cookie) => {
         const [key, _value] = cookie.split("=")
         if (key.trim() === "userId") return true
@@ -216,7 +105,7 @@ export const loadUser = () => async (dispatch: Dispatch) => {
     if (!isLoggedIn) return dispatch(userSlice.actions.SET_LOADING_FALSE())
 
     dispatch(userSlice.actions.SET_LOADING())
-    signInToken()
+    getMe()
         .then((res: any) => {
             const user = res.data
 
