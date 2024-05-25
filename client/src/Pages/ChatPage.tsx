@@ -16,6 +16,7 @@ import {
 import { useState } from "react"
 import { useAppSelector } from "@/hooks"
 import { ChannelUserType } from "@/types"
+import moment from "moment"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
@@ -99,28 +100,28 @@ function CallProfile({ profile }: { profile: (typeof callsProfile)[0] }) {
 }
 
 function ChatProfile({
-    profile,
+    channel,
     selectChat,
 }: {
-    profile: ChannelUserType
+    channel: ChannelUserType
     selectChat: () => void
 }) {
     const { user } = useAppSelector((state) => state.user)
     const myId = user?.userId
 
-    const otherPerson = profile.members.find(
+    const otherPerson = channel.members.find(
         (member) => member.user._id !== myId,
     )
-    const avatarImage = profile.isGroup
-        ? profile.groupProfile.groupImage
+    const avatarImage = channel.isGroup
+        ? channel.groupProfile.groupImage
         : otherPerson?.user.profileImage
 
-    const name = profile.isGroup
-        ? profile.groupProfile.groupName
+    const name = channel.isGroup
+        ? channel.groupProfile.groupName
         : otherPerson?.user.name
 
-    const messageSender = profile.members.find(
-        (member) => member.user._id === (profile?.lastMessage?.senderId ?? ""),
+    const messageSender = channel.members.find(
+        (member) => member.user._id === (channel?.lastMessage?.senderId ?? ""),
     )
     return (
         <button
@@ -140,21 +141,23 @@ function ChatProfile({
             </Avatar>
             <div className="flex-1 text-left">
                 <div className="font-medium">{name}</div>
-                {profile.lastMessage && messageSender && (
+                {channel.lastMessage && messageSender && (
                     <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                         {messageSender.user._id === myId ? (
                             <span className="font-semibold">You: </span>
-                        ) : profile.isGroup ? (
+                        ) : channel.isGroup ? (
                             <span className="font-semibold">
                                 {messageSender.user.name.split(" ")[0] + ": "}
                             </span>
                         ) : null}
-                        {profile.lastMessage ? profile.lastMessage.message : ""}
+                        {channel.lastMessage ? channel.lastMessage.message : ""}
                     </div>
                 )}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-                {profile.createdAt}
+                {channel.lastMessage
+                    ? moment(channel.lastMessage.createdAt).fromNow()
+                    : moment(channel.createdAt).fromNow()}
             </div>
         </button>
     )
@@ -187,10 +190,10 @@ export default function ChatPage() {
                     </div>
                 </div>
                 <Tabs
-                    className="h-[calc(100%-75px)] w-full"
+                    className="max-h-[calc(100%-75px)] w-full flex flex-col"
                     defaultValue="chat"
                 >
-                    <TabsList className="flex rounded-none">
+                    <TabsList className="h-[45px] flex rounded-none">
                         <TabsTrigger
                             className="flex-1 py-2 text-center gap-2"
                             value="chat"
@@ -206,12 +209,15 @@ export default function ChatPage() {
                             Calls
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent className="overflow-auto" value="chat">
+                    <TabsContent
+                        className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
+                        value="chat"
+                    >
                         <div className="grid gap-2 p-4">
                             {user.channels.map((profile) => (
                                 <ChatProfile
                                     key={profile._id}
-                                    profile={profile}
+                                    channel={profile}
                                     selectChat={() =>
                                         setChatSelected(profile._id)
                                     }
@@ -219,7 +225,10 @@ export default function ChatPage() {
                             ))}
                         </div>
                     </TabsContent>
-                    <TabsContent className="overflow-auto" value="calls">
+                    <TabsContent
+                        className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
+                        value="calls"
+                    >
                         <div className="grid gap-2 p-4">
                             {callsProfile.map((profile) => (
                                 <CallProfile

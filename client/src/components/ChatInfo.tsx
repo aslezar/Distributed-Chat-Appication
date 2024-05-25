@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Info } from "lucide-react"
 import { useAppSelector } from "@/hooks"
 import { MemberType, ChannelType } from "@/types"
+import moment from "moment"
 
 export default function ChatInfo({
     channel,
@@ -39,7 +40,7 @@ export default function ChatInfo({
                     <DialogTitle>{channel?.groupProfile.groupName}</DialogTitle>
                     <DialogDescription>
                         Created on{" "}
-                        {new Date(channel?.createdAt as string).toDateString() +
+                        {moment(channel?.createdAt).format("D MMMM YY, kk:mm") +
                             " by "}
                         <span className="font-semibold">
                             {adminMember?.user.name}

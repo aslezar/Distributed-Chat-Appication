@@ -80,15 +80,32 @@ export default (io: SocketIOServer | null, socket: Socket) => {
                             },
                         ],
                     })
+
+                    const channel = await Channel.findById(
+                        newChannel._id,
+                    ).populate("members.user", "name profileImage phoneNo")
+                    if (!channel) {
+                        cb({
+                            msg: "Channel not found",
+                            success: false,
+                        })
+                        return
+                    }
+
+                    const data = {
+                        channel: {
+                            ...newChannel.toJSON(),
+                            members: undefined,
+                        },
+                        members: channel.members,
+                        messages: [],
+                        isNew: true,
+                    }
                     socket.join(newChannel._id.toString())
                     cb({
                         msg: `Channel joined ${newChannel._id}`,
                         success: true,
-                        data: {
-                            channel: newChannel,
-                            members: newChannel.members,
-                            messages: [],
-                        },
+                        data,
                     })
                     console.log(
                         `${socket.id} joined channel: ${newChannel._id}`,

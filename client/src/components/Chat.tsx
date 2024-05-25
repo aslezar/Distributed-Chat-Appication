@@ -8,7 +8,9 @@ import ChatInfo from "./ChatInfo"
 import { useSocketContext } from "@/context/SocketContext"
 import { MessageType, ChannelType, MemberType } from "@/types"
 import toast from "react-hot-toast"
-import { useAppSelector } from "@/hooks"
+import { useAppDispatch, useAppSelector } from "@/hooks"
+import moment from "moment"
+import { addChannel } from "@/features/userSlice"
 
 function ChatProfileBar({
     channel,
@@ -151,7 +153,7 @@ function Messages({
     const myId = user?.userId
 
     return (
-        <div className="flex-1 overflow-y-scroll p-4">
+        <div className="max-h-[calc(100vh-120px)] flex-1 overflow-y-scroll p-4">
             <div className="grid gap-4">
                 {messages.map((message) =>
                     message.senderId === myId ? (
@@ -195,7 +197,7 @@ function OtherMessage({
                     {message.message}
                 </div>
                 <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                    {message.createdAt}
+                    {moment(message.createdAt).format("D MMMM YY, kk:mm")}
                 </div>
             </div>
         </div>
@@ -210,7 +212,7 @@ function MyMessage({ message }: { message: MessageType }) {
                     {message.message}
                 </div>
                 <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                    {message.createdAt}
+                    {moment(message.createdAt).format("D MMMM YY, kk:mm")}
                 </div>
             </div>
         </div>
@@ -230,6 +232,7 @@ export default function Chat({
         new Map(),
     )
 
+    const dispatch = useAppDispatch()
     const { socket } = useSocketContext()
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -254,9 +257,24 @@ export default function Chat({
         if (!socket || chatSelected === null) return
         function handleJoinChannel(data: any) {
             if (data.success === false) return toast.error(data.msg)
+            console.log(data.data)
+
             const channel = data.data.channel as ChannelType
             const messages = data.data.messages as MessageType[]
             const members = data.data.members as MemberType[]
+
+            if (data.data.isNew) {
+                dispatch(
+                    addChannel({
+                        _id: channel._id,
+                        isGroup: channel.isGroup,
+                        groupProfile: channel.groupProfile,
+                        createdAt: channel.createdAt,
+                        lastMessage: undefined,
+                        members: members,
+                    }),
+                )
+            }
 
             // console.log(channel)
             // console.log(messages)
