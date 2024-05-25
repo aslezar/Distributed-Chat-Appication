@@ -16,7 +16,8 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
 import { search as searchApi, createGroup } from "../api"
 import { OtherUserType } from "@/types"
-import { useAppSelector } from "@/hooks"
+import { useAppDispatch, useAppSelector } from "@/hooks"
+import { addChannel } from "@/features/userSlice"
 
 export default function AddChat({
     setChatSelected,
@@ -81,6 +82,8 @@ function CreateGroup({
 
     const { user } = useAppSelector((state) => state.user)
 
+    const dispatch = useAppDispatch()
+
     useEffect(() => {
         if (!user) return
         setSelectedMembers([
@@ -132,7 +135,9 @@ function CreateGroup({
         setCreatingGroup(true)
         createGroup(groupName, members)
             .then((response) => {
-                setChatSelected(response.data.groupId)
+                console.log(response.data)
+                dispatch(addChannel(response.data))
+                setChatSelected(response.data._id)
                 closeDialog(false)
             })
             .catch((error) => console.error(error.response))
@@ -141,7 +146,43 @@ function CreateGroup({
 
     return (
         <form className="px-4 py-2" onSubmit={handleCreateGroup}>
-            <div className="flex gap-2 mb-2">
+            <Input
+                id="group-name"
+                name="groupName"
+                required
+                placeholder="Enter Group Name"
+                className="mx-auto mb-2 max-w-[80%] sm:max-w-[80%]"
+            />
+
+            <div className="grid gap-2">
+                <SearchUser
+                    search={search}
+                    setSearch={setSearch}
+                    setResults={setResults}
+                >
+                    {users?.length === 0 && (
+                        <p className="text-center text-gray-500 dark:text-gray-400">
+                            No results found
+                        </p>
+                    )}
+                    {users &&
+                        users.map(
+                            (member) =>
+                                member._id !== user.userId && (
+                                    <Member
+                                        key={member._id}
+                                        member={member}
+                                        isSelected={isSelected(member._id)}
+                                        toggleSelection={() =>
+                                            toggleSelection(member)
+                                        }
+                                    />
+                                ),
+                        )}
+                </SearchUser>
+            </div>
+            <div className="flex gap-2 mb-2 overflow-x-auto text-center items-center">
+                Members:
                 {selectedMembers.map((member) => (
                     <Button
                         key={member._id}
@@ -167,36 +208,6 @@ function CreateGroup({
                         </Avatar>
                     </Button>
                 ))}
-            </div>
-            <Input
-                id="group-name"
-                name="groupName"
-                required
-                placeholder="Group Name"
-                className="mx-auto mb-2"
-            />
-
-            <div className="grid gap-2">
-                <SearchUser
-                    search={search}
-                    setSearch={setSearch}
-                    setResults={setResults}
-                >
-                    {users?.length === 0 && (
-                        <p className="text-center text-gray-500 dark:text-gray-400">
-                            No results found
-                        </p>
-                    )}
-                    {users &&
-                        users.map((member) => (
-                            <Member
-                                key={member._id}
-                                member={member}
-                                isSelected={isSelected(member._id)}
-                                toggleSelection={() => toggleSelection(member)}
-                            />
-                        ))}
-                </SearchUser>
             </div>
             <DialogFooter className="flex justify-end gap-2 mt-4">
                 <DialogTrigger asChild>
@@ -319,7 +330,7 @@ function SearchUser({
                 id="search-members"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Name | Phone Number"
+                placeholder="Search Name | Phone Number"
                 className="max-w-[60%] sm:max-w-[60%] mx-auto mb-2"
             />
             {children}

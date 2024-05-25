@@ -15,7 +15,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useAppSelector } from "@/hooks"
-import { ChannelType, ChannelUserType } from "@/types"
+import { ChannelUserType } from "@/types"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
@@ -166,6 +166,8 @@ export default function ChatPage() {
     const { user } = useAppSelector((state) => state.user)
     if (!user) return <div>You need to login</div>
 
+    console.log(user.channels)
+
     return (
         <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
             <div
@@ -204,7 +206,7 @@ export default function ChatPage() {
                             Calls
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent className="h-full overflow-auto" value="chat">
+                    <TabsContent className="overflow-auto" value="chat">
                         <div className="grid gap-2 p-4">
                             {user.channels.map((profile) => (
                                 <ChatProfile
@@ -217,7 +219,7 @@ export default function ChatPage() {
                             ))}
                         </div>
                     </TabsContent>
-                    <TabsContent className="h-full overflow-auto" value="calls">
+                    <TabsContent className="overflow-auto" value="calls">
                         <div className="grid gap-2 p-4">
                             {callsProfile.map((profile) => (
                                 <CallProfile

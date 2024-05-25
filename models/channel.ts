@@ -24,11 +24,11 @@ const ChannelSchema = new Schema<IChannel>(
         groupProfile: {
             groupName: {
                 type: String,
-                default: "",
             },
             groupImage: {
                 type: String,
-                default: "",
+                default:
+                    "https://freeiconshop.com/wp-content/uploads/edd/many-people-outline.png",
             },
         },
     },

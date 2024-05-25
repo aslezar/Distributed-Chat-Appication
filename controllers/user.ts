@@ -44,7 +44,6 @@ const getMe = async (req: Request, res: Response) => {
         )
         return {
             _id: c._id,
-            name: c.name,
             isGroup: c.isGroup,
             groupProfile: c.groupProfile,
             members: c.members,
@@ -146,26 +145,31 @@ const createGroup = async (req: Request, res: Response) => {
     const groupMember = members.map((member: string) => {
         if (member === userId.toString()) {
             return {
-                userId: member,
+                user: member,
                 role: Roles.ADMIN,
             }
         }
         return {
-            userId: member,
+            user: member,
             role: Roles.MEMBER,
         }
     })
 
-    const group = new Channel({
-        name,
-        members: groupMember,
+    const createGroup = await Channel.create({
         isGroup: true,
+        members: groupMember,
+        groupProfile: {
+            groupName: name,
+        },
     })
 
-    await group.save()
+    const group = await Channel.findById(createGroup._id).populate(
+        "members.user",
+        "name profileImage phoneNo",
+    )
 
     res.status(StatusCodes.CREATED).json({
-        data: { groupId: group._id },
+        data: group,
         success: true,
         msg: `Group ${name} Created`,
     })

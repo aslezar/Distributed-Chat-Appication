@@ -3,6 +3,8 @@ import Joi from "joi"
 import Channel from "../models/channel"
 import ChatMessage from "../models/chatMessage"
 import { channel } from "diagnostics_channel"
+import { User } from "../models"
+import Roles from "../roles"
 
 const payloadSchema = Joi.object({
     channelId: Joi.string().hex().length(24),
@@ -43,40 +45,80 @@ export default (io: SocketIOServer | null, socket: Socket) => {
                 })
                 return
             }
+            console.log(myUserId)
+
             const channel = await Channel.findOne({
                 _id: channelId,
-                "members.user": myUserId,
-            }).populate("members.user", "name profileImage")
+                // "members.user": {
+                //     $in: [myUserId],
+                // },
+            }).populate("members.user", "name profileImage phoneNo")
 
             if (!channel) {
+                if (channelId === myUserId) {
+                    cb({
+                        msg: "You can't join your own channel",
+                        success: false,
+                    })
+                    return
+                }
+                const otherUser = await User.findById(channelId)
+                if (!otherUser) {
+                    cb({
+                        msg: "Channel not found or you are not authorized.",
+                        success: false,
+                    })
+                    return
+                } else {
+                    const newChannel = await Channel.create({
+                        isGroup: false,
+                        members: [
+                            { user: myUserId, role: Roles.MEMBER },
+                            {
+                                user: otherUser?._id,
+                                role: Roles.MEMBER,
+                            },
+                        ],
+                    })
+                    socket.join(newChannel._id.toString())
+                    cb({
+                        msg: `Channel joined ${newChannel._id}`,
+                        success: true,
+                        data: {
+                            channel: newChannel,
+                            members: newChannel.members,
+                            messages: [],
+                        },
+                    })
+                    console.log(
+                        `${socket.id} joined channel: ${newChannel._id}`,
+                    )
+                    return
+                }
+            } else {
+                socket.join(channelId)
+                //find last 10 messages
+                const messages = await ChatMessage.find({ sendToId: channelId })
+                    .sort({ createdAt: -1 })
+                    .limit(10)
+
+                const data = {
+                    channel: {
+                        ...channel.toJSON(),
+                        members: undefined,
+                    },
+                    members: channel.members,
+                    messages,
+                }
+
                 cb({
-                    msg: "Channel not found or you are not authorized.",
-                    success: false,
+                    msg: `Channel joined ${channel._id}`,
+                    success: true,
+                    data,
                 })
+                console.log(`${socket.id} joined channel: ${channel._id}`)
                 return
             }
-            socket.join(channelId)
-            //find last 10 messages
-            const messages = await ChatMessage.find({ sendToId: channelId })
-                .sort({ createdAt: -1 })
-                .limit(10)
-
-            const data = {
-                channel: {
-                    ...channel.toJSON(),
-                    members: undefined,
-                },
-                members: channel.members,
-                messages,
-            }
-
-            cb({
-                msg: `Channel joined ${channel.name}`,
-                success: true,
-                data,
-            })
-            console.log(`${socket.id} joined channel: ${channel.name}`)
-            return
         } catch (error) {
             console.log(error)
             cb({ msg: "Server: Error joining channel", success: false })
@@ -99,12 +141,15 @@ export default (io: SocketIOServer | null, socket: Socket) => {
         if (errorHandler(socket, data, cb)) return
         const { channelId, message } = data
         try {
-            const newMessage = new ChatMessage({
+            const newMessage = await ChatMessage.create({
                 senderId: userId,
                 sendToId: channelId,
                 message,
             })
-            await newMessage.save()
+
+            io.emit("channel:newMessage", {
+                data: newMessage,
+            })
 
             cb({
                 data: newMessage,

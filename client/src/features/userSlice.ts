@@ -1,7 +1,12 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit"
 import { RootState } from "../store"
 import toast from "react-hot-toast"
-import { LoginType, UserType, VerifyOtp } from "../types/index.ts"
+import {
+    ChannelUserType,
+    LoginType,
+    UserType,
+    VerifyOtp,
+} from "../types/index.ts"
 import {
     signIn,
     signInGoogle,
@@ -48,6 +53,9 @@ export const userSlice = createSlice({
         },
         UPDATE_IMAGE: (state, action) => {
             if (state.user) state.user.profileImage = action.payload
+        },
+        ADD_CHANNEL: (state, action) => {
+            if (state.user) state.user.channels.push(action.payload)
         },
     },
 })
@@ -127,9 +135,11 @@ export const updateProfileImage =
         dispatch(userSlice.actions.UPDATE_IMAGE(image))
     }
 
-// export const addGroup = (group: any) => async (dispatch: Dispatch) => {
-//     dispatch(userSlice.actions.SET_USER(group))
-// }
+export const addChannel =
+    (group: ChannelUserType) => async (dispatch: Dispatch) => {
+        console.log(group)
+        dispatch(userSlice.actions.ADD_CHANNEL(group))
+    }
 export const selectUserState = (state: RootState) => state.user
 
 export default userSlice.reducer

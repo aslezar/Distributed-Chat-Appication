@@ -1,15 +1,14 @@
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter,
 } from "@/components/ui/dialog"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { CardHeader, CardFooter } from "@/components/ui/card"
 import { Camera, Trash } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "../hooks"
 import { logout, updateName, updateProfileImage } from "../features/userSlice"
@@ -99,94 +98,91 @@ export default function ViewProfileButton() {
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>My Profile</DialogTitle>
-                    <DialogDescription>
-                        <CardHeader className="flex flex-col items-center gap-4 p-6">
-                            <Avatar className="h-24 w-24">
-                                <AvatarImage
-                                    alt="Profile Photo"
-                                    src={user.profileImage}
-                                />
-                                <AvatarFallback>
-                                    {user.name
-                                        .split(" ")
-                                        .map((word) =>
-                                            word.substring(0, 1).toUpperCase(),
-                                        )
-                                        .join("")
-                                        .substring(0, 2)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="secondary"
-                                    disabled={loadingProfileImage}
-                                >
-                                    <Label
-                                        htmlFor="profileImage"
-                                        className="flex justify-center items-center"
-                                    >
-                                        <Camera className="mr-2 h-4 w-4" />
-                                        Change
-                                    </Label>
-                                </Button>
-                                <Input
-                                    id="profileImage"
-                                    type="file"
-                                    onChange={handleProfileChange}
-                                    accept="image/jpeg, image/png, image/jpg, image/webp"
-                                    className="hidden"
-                                    multiple={false}
-                                />
-                                <Button
-                                    variant="outline"
-                                    disabled={loadingProfileImage}
-                                    onClick={handleProfileImageDelete}
-                                >
-                                    <Trash className="mr-2 h-4 w-4" />
-                                    Delete
-                                </Button>
-
-                                <ModeToggle />
-                            </div>
-                            <div className="space-y-1 text-center">
-                                <Input
-                                    id="name"
-                                    defaultValue={user.name}
-                                    type="text"
-                                    ref={nameInputRef}
-                                    minLength={3}
-                                    maxLength={50}
-                                    onChange={(e) => {
-                                        setDisableButton(
-                                            e.target.value === user.name,
-                                        )
-                                    }}
-                                    className="text-xl font-semibold"
-                                />
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {user.email}
-                                </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {user.phoneNo}
-                                </p>
-                            </div>
-                        </CardHeader>
-                        <CardFooter className="flex justify-end p-4 gap-4">
-                            <Button
-                                variant="outline"
-                                onClick={() => dispatch(logout())}
-                            >
-                                Log Out
-                            </Button>
-                            <Button
-                                disabled={disableButton}
-                                onClick={handleSaveChanges}
-                            >
-                                Save Changes
-                            </Button>
-                        </CardFooter>
-                    </DialogDescription>
                 </DialogHeader>
+                <div className="flex flex-col items-center gap-4 p-6">
+                    <Avatar className="h-24 w-24">
+                        <AvatarImage
+                            alt="Profile Photo"
+                            src={user.profileImage}
+                        />
+                        <AvatarFallback>
+                            {user.name
+                                .split(" ")
+                                .map((word) =>
+                                    word.substring(0, 1).toUpperCase(),
+                                )
+                                .join("")
+                                .substring(0, 2)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="secondary"
+                            disabled={loadingProfileImage}
+                        >
+                            <Label
+                                htmlFor="profileImage"
+                                className="flex justify-center items-center"
+                            >
+                                <Camera className="mr-2 h-4 w-4" />
+                                Change
+                            </Label>
+                        </Button>
+                        <Input
+                            id="profileImage"
+                            type="file"
+                            onChange={handleProfileChange}
+                            accept="image/jpeg, image/png, image/jpg, image/webp"
+                            className="hidden"
+                            multiple={false}
+                        />
+                        <Button
+                            variant="outline"
+                            disabled={loadingProfileImage}
+                            onClick={handleProfileImageDelete}
+                        >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete
+                        </Button>
+
+                        <ModeToggle />
+                    </div>
+                    <div className="space-y-1 text-center">
+                        <Input
+                            id="name"
+                            defaultValue={user.name}
+                            type="text"
+                            ref={nameInputRef}
+                            minLength={3}
+                            maxLength={50}
+                            onChange={(e) => {
+                                setDisableButton(e.target.value === user.name)
+                            }}
+                            className="text-xl font-semibold"
+                        />
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {user.email}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {user.phoneNo}
+                        </p>
+                    </div>
+                </div>
+
+                <DialogFooter className="flex justify-end p-4 gap-4">
+                    <Button
+                        variant="outline"
+                        onClick={() => dispatch(logout())}
+                    >
+                        Log Out
+                    </Button>
+                    <Button
+                        disabled={disableButton}
+                        onClick={handleSaveChanges}
+                    >
+                        Save Changes
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

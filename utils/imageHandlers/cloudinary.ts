@@ -34,7 +34,4 @@ const deleteProfileImage = async (userId: string): Promise<boolean> => {
     return result
 }
 
-export {
-    uploadProfileImage,
-    deleteProfileImage,
-}
+export { uploadProfileImage, deleteProfileImage }

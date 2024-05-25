@@ -31,7 +31,6 @@ export interface IChatMessage extends Document {
 }
 
 export interface IChannel extends Document {
-    name: string
     members: Types.Array<{
         user: Schema.Types.ObjectId
         role: string

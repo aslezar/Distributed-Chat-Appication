@@ -37,7 +37,7 @@ export interface ChannelType {
     createdAt: string
 }
 export interface ChannelUserType extends ChannelType {
-    lastMessage: MessageType | null
+    lastMessage: MessageType | undefined
     members: MemberType[]
 }
 export interface UserType {
