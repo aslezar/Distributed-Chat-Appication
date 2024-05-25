@@ -1,7 +1,7 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit"
 import { RootState } from "../store"
 import toast from "react-hot-toast"
-import { LoginType, UserType, VerifyOtp } from "../definitions"
+import { LoginType, UserType, VerifyOtp } from "../types/index.ts"
 import {
     signIn,
     signInGoogle,
@@ -45,6 +45,9 @@ export const userSlice = createSlice({
         },
         UPDATE_NAME: (state, action) => {
             if (state.user) state.user.name = action.payload
+        },
+        UPDATE_IMAGE: (state, action) => {
+            if (state.user) state.user.profileImage = action.payload
         },
     },
 })
@@ -116,9 +119,13 @@ export const loadUser = () => async (dispatch: Dispatch) => {
         .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
 }
 
-export const updateUser = (user: UserType) => async (dispatch: Dispatch) => {
-    dispatch(userSlice.actions.SET_USER(user))
+export const updateName = (name: string) => async (dispatch: Dispatch) => {
+    dispatch(userSlice.actions.UPDATE_NAME(name))
 }
+export const updateProfileImage =
+    (image: string) => async (dispatch: Dispatch) => {
+        dispatch(userSlice.actions.UPDATE_IMAGE(image))
+    }
 export const selectUserState = (state: RootState) => state.user
 
 export default userSlice.reducer

@@ -23,11 +23,13 @@ const getMe = async (req: Request, res: Response) => {
 
     const socketToken = user.generateSocketToken()
 
+    console.log("remove this line for phoneNo")
+
     const sendUser = {
         userId: user._id,
         name: user.name,
         email: user.email,
-        phoneNo: user.phoneNo,
+        phoneNo: user.phoneNo || "999",
         profileImage: user.profileImage,
         socketToken,
     }
@@ -62,7 +64,7 @@ const updateCompleteProfile = async (req: Request, res: Response) => {
 
     res.status(StatusCodes.OK).json({
         success: true,
-        msg: "Profile Updated Successfully",
+        msg: "Profile Updated",
     })
 }
 
@@ -79,7 +81,7 @@ const updateProfileImage = async (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({
         data: { profileImage: cloudinary_img_url },
         success: true,
-        msg: "Image Updated Successfully",
+        msg: "Profile Image Updated",
     })
 }
 
@@ -100,7 +102,7 @@ const deleteProfileImage = async (req: Request, res: Response) => {
                 "https://res.cloudinary.com/dzvci8arz/image/upload/v1715358550/iaxzl2ivrkqklfvyasy1.jpg",
         },
         success: true,
-        msg: "Image Deleted Successfully",
+        msg: "Profile Image Deleted",
     })
 }
 

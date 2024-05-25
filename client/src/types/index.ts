@@ -17,8 +17,8 @@ export interface UserType {
     userId: string
     name: string
     email: string
+    phoneNo: string
     profileImage: string
-    phoneNo: string | undefined
     socketToken: string
     createdAt: string
     updatedAt: string

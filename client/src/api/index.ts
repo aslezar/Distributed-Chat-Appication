@@ -1,6 +1,6 @@
 import axios from "axios"
 import toast from "react-hot-toast"
-import { LoginType, SignUpType, UserType, VerifyOtp } from "../definitions"
+import { LoginType, SignUpType, UserType, VerifyOtp } from "../types"
 
 /*
  ********************** Configuring Axios **********************
@@ -84,8 +84,7 @@ export const signOut = () => API.post("/auth/sign-out")
  */
 
 export const getMe = () => API.get("/user/me")
-export const updateProfile = (userData: UserType) => {
-    const { name } = userData
+export const updateProfile = (name: UserType["name"]) => {
     return API.patch("/user/update-profile", {
         name,
     })

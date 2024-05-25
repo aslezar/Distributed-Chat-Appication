@@ -3,12 +3,22 @@ import React from "react"
 import { loginGoogle } from "../features/userSlice"
 import { useAppDispatch, useAppSelector } from "../hooks"
 import { useNavigate } from "react-router-dom"
+import { useTheme, Theme } from "@/context/ThemeContext"
 
 const ContinueWithGoogleButton = () => {
     const { isAuthenticated, loading } = useAppSelector((state) => state.user)
 
     const navigate = useNavigate()
     const dispatch = useAppDispatch()
+
+    const { theme } = useTheme()
+    let isDark = theme === Theme.Dark
+    if (theme === "system") {
+        const systemTheme = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+        ).matches
+        if (systemTheme) isDark = true
+    }
 
     React.useEffect(() => {
         const googleDataCallback = (res: any) => {
@@ -25,7 +35,7 @@ const ContinueWithGoogleButton = () => {
             document.body.removeChild(script)
             ;(window as any).continueWithGoogle = null
         }
-    }, [dispatch])
+    }, [dispatch, isDark])
 
     React.useEffect(() => {
         if (!loading && isAuthenticated) {
@@ -46,11 +56,12 @@ const ContinueWithGoogleButton = () => {
             <div
                 className="g_id_signin"
                 data-type="standard"
-                data-shape="pill"
-                data-theme="filled_blue"
+                data-shape="circle"
+                data-theme={isDark ? "filled_black" : "filled_blue"}
                 data-text="continue_with"
                 data-size="large"
-                data-logo_alignment="center"
+                data-logo_alignment="left"
+                data-width="300"
             ></div>
         </div>
     )

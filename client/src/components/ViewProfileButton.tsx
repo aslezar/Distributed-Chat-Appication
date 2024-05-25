@@ -11,14 +11,78 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { CardHeader, CardFooter } from "@/components/ui/card"
 import { Camera, Trash, User } from "lucide-react"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import { logout, updateName, updateProfileImage } from "../features/userSlice"
+import { useRef, useState } from "react"
 import ModeToggle from "./MoodToggle"
-import { useAppDispatch } from "../hooks"
-import { logout } from "../features/userSlice"
+import { deleteProfileImage, updateProfile, updateImage } from "@/api"
+import toast from "react-hot-toast"
+import { Label } from "./ui/label"
 
 export default function ViewProfileButton() {
+    const nameInputRef = useRef<HTMLInputElement>(null)
+    const [disableButton, setDisableButton] = useState(true)
+
+    const [loadingProfileImage, setLoadingProfileImage] =
+        useState<boolean>(false)
+
     const dispatch = useAppDispatch()
+    const { user } = useAppSelector((state) => state.user)
+
+    const handleSaveChanges = async () => {
+        if (!user) return
+        const name = nameInputRef.current?.value
+
+        if (!name) return
+        updateProfile(name)
+            .then((_response) => {
+                toast.success("Profile Updated")
+                dispatch(updateName(name))
+            })
+            .catch((error) => console.log(error))
+    }
+
+    const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault()
+        if (e.target.files) {
+            toast.loading("Uploading...", { id: "profileImage" })
+            setLoadingProfileImage(true)
+            updateImage(e.target.files[0])
+                .then((response) => {
+                    dispatch(updateProfileImage(response.data.profileImage))
+                })
+                .catch((error) => console.log(error))
+                .finally(() => {
+                    setLoadingProfileImage(false)
+                    toast.success("Profile Image Updated", {
+                        id: "profileImage",
+                    })
+                })
+        }
+    }
+
+    const handleProfileImageDelete = (
+        e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    ) => {
+        e.preventDefault()
+        setLoadingProfileImage(true)
+        deleteProfileImage()
+            .then((response) => {
+                dispatch(updateProfileImage(response.data.defaultProfileImage))
+                toast.success("Profile Image Deleted")
+            })
+            .catch((error) => console.log(error))
+            .finally(() => setLoadingProfileImage(false))
+    }
+
+    if (!user) return <div>Null</div>
+
     return (
-        <Dialog>
+        <Dialog
+            onOpenChange={(open) => {
+                if (!open) setDisableButton(true)
+            }}
+        >
             <DialogTrigger>
                 <Button
                     variant="outline"
@@ -36,32 +100,70 @@ export default function ViewProfileButton() {
                             <Avatar className="h-24 w-24">
                                 <AvatarImage
                                     alt="Profile Photo"
-                                    src="/placeholder-avatar.jpg"
+                                    src={user.profileImage}
                                 />
-                                <AvatarFallback>JP</AvatarFallback>
+                                <AvatarFallback>
+                                    {user.name
+                                        .split(" ")
+                                        .map((word) =>
+                                            word.substring(0, 1).toUpperCase(),
+                                        )
+                                        .join("")
+                                        .substring(0, 2)}
+                                </AvatarFallback>
                             </Avatar>
                             <div className="flex gap-2">
-                                <Button size="sm" variant="outline">
-                                    <Camera className="mr-2 h-4 w-4" />
-                                    Change
+                                <Button
+                                    variant="outline"
+                                    disabled={loadingProfileImage}
+                                >
+                                    <Label
+                                        htmlFor="profileImage"
+                                        className="flex justify-center items-center"
+                                    >
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Change
+                                    </Label>
                                 </Button>
-                                <Button size="sm" variant="outline">
+                                <Input
+                                    id="profileImage"
+                                    type="file"
+                                    onChange={handleProfileChange}
+                                    accept="image/jpeg, image/png, image/jpg, image/webp"
+                                    className="hidden"
+                                    multiple={false}
+                                />
+                                <Button
+                                    variant="outline"
+                                    disabled={loadingProfileImage}
+                                    onClick={handleProfileImageDelete}
+                                >
                                     <Trash className="mr-2 h-4 w-4" />
                                     Delete
                                 </Button>
+
                                 <ModeToggle />
                             </div>
                             <div className="space-y-1 text-center">
                                 <Input
-                                    className="text-xl font-semibold"
-                                    defaultValue="Jared Palmer"
                                     id="name"
+                                    defaultValue={user.name}
+                                    type="text"
+                                    ref={nameInputRef}
+                                    minLength={3}
+                                    maxLength={50}
+                                    onChange={(e) => {
+                                        setDisableButton(
+                                            e.target.value === user.name,
+                                        )
+                                    }}
+                                    className="text-xl font-semibold"
                                 />
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    jared@example.com
+                                    {user.email}
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    9876543210
+                                    {user.phoneNo}
                                 </p>
                             </div>
                         </CardHeader>
@@ -72,7 +174,12 @@ export default function ViewProfileButton() {
                             >
                                 Log Out
                             </Button>
-                            <Button>Save Changes</Button>
+                            <Button
+                                disabled={disableButton}
+                                onClick={handleSaveChanges}
+                            >
+                                Save Changes
+                            </Button>
                         </CardFooter>
                     </DialogDescription>
                 </DialogHeader>
