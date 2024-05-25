@@ -11,8 +11,10 @@ import {
     PhoneOutgoing,
     Video,
     Phone,
+    MessageSquareText,
 } from "lucide-react"
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
@@ -184,8 +186,10 @@ export default function ChatPage() {
     console.log(chatSelected)
 
     return (
-        <div className="grid h-screen w-full grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
-            <div className="border-r border-gray-200 dark:border-gray-800">
+        <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
+            <div
+                className={`border-r border-gray-200 dark:border-gray-800 ${chatSelected === null ? "block" : "hidden sm:block"}`}
+            >
                 <div className="flex h-[75px] items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
                     <Link
                         className="flex items-center gap-2 font-semibold"
@@ -195,7 +199,9 @@ export default function ChatPage() {
                         <span>Vibe Talk</span>
                     </Link>
                     <div className="flex gap-2">
-                        <AddChat />
+                        <Button variant="ghost" className="p-2">
+                            <AddChat />
+                        </Button>
                         <ViewProfileButton />
                     </div>
                 </div>
@@ -203,17 +209,19 @@ export default function ChatPage() {
                     className="h-[calc(100%-75px)] w-full"
                     defaultValue="chat"
                 >
-                    <TabsList className="flex border-b">
+                    <TabsList className="flex rounded-none">
                         <TabsTrigger
-                            className="flex-1 py-3 text-center"
+                            className="flex-1 py-2 text-center gap-2"
                             value="chat"
                         >
+                            <MessageSquareText className="h-4 w-4" />
                             Chat
                         </TabsTrigger>
                         <TabsTrigger
-                            className="flex-1 py-3 text-center"
+                            className="flex-1 py-2 text-center gap-2"
                             value="calls"
                         >
+                            <Phone className="h-4 w-4" />
                             Calls
                         </TabsTrigger>
                     </TabsList>
@@ -242,7 +250,10 @@ export default function ChatPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-            <Chat chatSelected={chatSelected} />
+            <Chat
+                chatSelected={chatSelected}
+                setChatSelected={setChatSelected}
+            />
         </div>
     )
 }

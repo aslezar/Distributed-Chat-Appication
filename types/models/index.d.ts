@@ -32,7 +32,9 @@ export interface IChatMessage extends Document {
 
 export interface IChannel extends Document {
     name: string
-    allowedUsers: Types.Array<Schema.Types.ObjectId>
+    members: Types.Array<Schema.Types.ObjectId>
+    admin: Schema.Types.ObjectId
+    isGroup: boolean
     createdAt: Date
     updatedAt: Date
 }

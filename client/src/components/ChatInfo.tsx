@@ -52,8 +52,10 @@ export default function ChatInfo() {
     return (
         <Dialog>
             <DialogTrigger>
-                <Info className="h-5 w-5" />
-                <span className="sr-only">More Options</span>
+                <Button variant="ghost" className="p-1">
+                    <Info className="h-5 w-5" />
+                    <span className="sr-only">More Options</span>
+                </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

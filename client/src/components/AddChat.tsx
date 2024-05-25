@@ -7,13 +7,16 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { UserRoundPlus } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function AddChat() {
     return (
         <Dialog>
             <DialogTrigger>
-                <UserRoundPlus className="h-6 w-6" />
-                <span className="sr-only">Add Chat</span>
+                <Button variant="ghost" className="p-1">
+                    <UserRoundPlus className="h-6 w-6" />
+                    <span className="sr-only">Add Chat</span>
+                </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import { Phone, Video, Paperclip, Send } from "lucide-react"
+import { Phone, Video, Paperclip, Send, ArrowLeft } from "lucide-react"
 import { useRef, useState } from "react"
 import EmojiPicker from "../components/EmojiPicker"
 import ChatInfo from "./ChatInfo"
@@ -49,10 +49,22 @@ const msg = [
     },
 ]
 
-function ChatProfileBar() {
+function ChatProfileBar({
+    setChatSelected,
+}: {
+    setChatSelected: (id: string | null) => void
+}) {
     return (
         <div className="flex h-[60px] items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
             <div className="flex items-center gap-3">
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="p-1"
+                    onClick={() => setChatSelected(null)}
+                >
+                    <ArrowLeft />
+                </Button>
                 <Avatar>
                     <AvatarImage alt="John Doe" src="/placeholder-avatar.jpg" />
                     <AvatarFallback>JD</AvatarFallback>
@@ -190,8 +202,10 @@ function MyMessage({ message }: { message: (typeof msg)[0] }) {
 
 export default function Chat({
     chatSelected,
+    setChatSelected,
 }: {
     chatSelected: string | null
+    setChatSelected: (id: string | null) => void
 }) {
     const [messages, setMessages] = useState(msg)
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
@@ -218,22 +232,23 @@ export default function Chat({
             console.log(error)
         }
     }
-    if (!chatSelected)
-        return (
-            <div className="flex flex-col max-h-full">
-                {/* show random image from unsplash*/}
+    return (
+        <div
+            className={`flex-col max-h-full ${chatSelected === null ? "hidden sm:flex" : "flex"}`}
+        >
+            {chatSelected === null ? (
                 <img
                     src="./random.jpg"
                     alt="random"
                     className="object-cover w-full h-full"
                 />
-            </div>
-        )
-    return (
-        <div className="flex flex-col max-h-full">
-            <ChatProfileBar />
-            <Messages messages={messages} />
-            <InputMessage handleSendMessage={handleSendMessage} />
+            ) : (
+                <>
+                    <ChatProfileBar setChatSelected={setChatSelected} />
+                    <Messages messages={messages} />
+                    <InputMessage handleSendMessage={handleSendMessage} />
+                </>
+            )}
         </div>
     )
 }
