@@ -2,6 +2,7 @@ import { Server as SocketIOServer, Socket } from "socket.io"
 import Joi from "joi"
 import Channel from "../models/channel"
 import ChatMessage from "../models/chatMessage"
+import { channel } from "diagnostics_channel"
 
 const payloadSchema = Joi.object({
     channelId: Joi.string().hex().length(24),
@@ -25,19 +26,28 @@ export default (io: SocketIOServer | null, socket: Socket) => {
     if (!io) return
     console.log(`${socket.id} connected`)
     const userId = socket.user.userId
+    socket.join(userId.toString())
 
     const joinChannel = async (data: any, cb: any) => {
+        console.log(data)
+
         if (errorHandler(socket, data, cb)) return
         const { channelId } = data
 
         try {
-            const userId = socket.user.userId
+            const myUserId = socket.user.userId
+            if (!channelId) {
+                cb({
+                    msg: "Provide channelId",
+                    success: false,
+                })
+                return
+            }
             const channel = await Channel.findOne({
                 _id: channelId,
-                allowedUsers: {
-                    $in: [userId],
-                },
-            }).populate("allowedUsers", "name")
+                "members.user": myUserId,
+            }).populate("members.user", "name profileImage")
+
             if (!channel) {
                 cb({
                     msg: "Channel not found or you are not authorized.",
@@ -45,18 +55,28 @@ export default (io: SocketIOServer | null, socket: Socket) => {
                 })
                 return
             }
-
             socket.join(channelId)
+            //find last 10 messages
+            const messages = await ChatMessage.find({ sendToId: channelId })
+                .sort({ createdAt: -1 })
+                .limit(10)
+
+            const data = {
+                channel: {
+                    ...channel.toJSON(),
+                    members: undefined,
+                },
+                members: channel.members,
+                messages,
+            }
 
             cb({
-                msg: `Successfully joined channel ${channel.name}`,
+                msg: `Channel joined ${channel.name}`,
                 success: true,
-                data: {
-                    //send some messages and userId and their name
-                    channel,
-                },
+                data,
             })
-            console.log(`${socket.id} joined channel: ${channelId}`)
+            console.log(`${socket.id} joined channel: ${channel.name}`)
+            return
         } catch (error) {
             console.log(error)
             cb({ msg: "Server: Error joining channel", success: false })
@@ -75,21 +95,25 @@ export default (io: SocketIOServer | null, socket: Socket) => {
             cb({ msg: "Server: Error leaving room", success: false })
         }
     }
-    const createMessage = (data: any, cb: any) => {
+    const createMessage = async (data: any, cb: any) => {
         if (errorHandler(socket, data, cb)) return
         const { channelId, message } = data
         try {
             const newMessage = new ChatMessage({
-                userId,
-                channelId,
+                senderId: userId,
+                sendToId: channelId,
                 message,
             })
-            newMessage.save()
+            await newMessage.save()
 
-            cb({ msg: "Server: Message created", success: true })
+            cb({
+                data: newMessage,
+                msg: "Server: Message created",
+                success: true,
+            })
 
             console.log(
-                `${userId} sent message on room ${channelId} with message ${message}`,
+                `${userId} sent message on room ${channel.name} with message ${message}`,
             )
         } catch (error) {
             console.log(error)

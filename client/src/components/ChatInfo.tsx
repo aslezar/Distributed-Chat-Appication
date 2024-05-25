@@ -10,92 +10,72 @@ import {
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Info } from "lucide-react"
+import { useAppSelector } from "@/hooks"
+import { MemberType, ChannelType } from "@/types"
 
-const groupInfo = {
-    name: "Design Team",
-    members: [
-        {
-            _id: "1",
-            name: "John Doe",
-            avatar: "https://picsum.photos/id/1005/800/450",
-            phoneNo: "+1234567890",
-        },
-        {
-            _id: "2",
-            name: "Jane Smith",
-            avatar: "https://picsum.photos/id/1006/800/450",
-            phoneNo: "+1234567890",
-        },
-        {
-            _id: "3",
-            name: "Alice",
-            avatar: "https://picsum.photos/id/1007/800/450",
-            phoneNo: "+1234567890",
-        },
-        {
-            _id: "4",
-            name: "Bob",
-            avatar: "https://picsum.photos/id/1008/800/450",
-            phoneNo: "+1234567890",
-        },
-    ],
-    createdAt: "2021-09-01T00:00:00.000Z",
-    admin: {
-        _id: "1",
-        name: "John Doe",
-        avatar: "https://picsum.photos/id/1005/800/450",
-    },
-}
+export default function ChatInfo({
+    channel,
+    members,
+}: {
+    channel: ChannelType | null
+    members: Map<MemberType["_id"], MemberType>
+}) {
+    const { user } = useAppSelector((state) => state.user)
+    if (!user) return null
+    const myId = user.userId
+    // console.log(myId, channel, members)
 
-export default function ChatInfo() {
-    const myId = "1"
+    const membersArray = Array.from(members.values())
+    const adminMember = membersArray.find((m) => m.role === "admin")
+
     return (
         <Dialog>
             <DialogTrigger>
-                <Button variant="ghost" className="p-1">
-                    <Info className="h-5 w-5" />
-                    <span className="sr-only">More Options</span>
-                </Button>
+                <Info className="h-5 w-5" />
+                <span className="sr-only">More Options</span>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{groupInfo.name}</DialogTitle>
+                    <DialogTitle>{channel?.groupProfile.groupName}</DialogTitle>
                     <DialogDescription>
                         Created on{" "}
-                        {new Date(groupInfo.createdAt).toDateString() + " by "}
+                        {new Date(channel?.createdAt as string).toDateString() +
+                            " by "}
                         <span className="font-semibold">
-                            {groupInfo.admin.name}
+                            {adminMember?.user.name}
                         </span>
                     </DialogDescription>
                 </DialogHeader>
-                {groupInfo.members.map((member) => (
+                {membersArray.map((member) => (
                     <div
-                        key={member._id}
+                        key={member.user._id}
                         className="flex items-center gap-3 p-2"
                     >
                         <Avatar>
                             <AvatarImage
-                                alt={member.name}
-                                src={member.avatar}
+                                alt={member.user.name}
+                                src={member.user.profileImage}
                             />
-                            <AvatarFallback>{member.name[0]}</AvatarFallback>
+                            <AvatarFallback>
+                                {member.user.name[0]}
+                            </AvatarFallback>
                         </Avatar>
                         <div>
-                            <p>{member.name}</p>
+                            <p>{member.user.name}</p>
                             <p className="text-gray-500 dark:text-gray-400 text-sm">
-                                {member.phoneNo}
+                                {member.user.phoneNo}
                             </p>
                         </div>
                         {/* //in the end, we will show the admin badge */}
                         <p className="text-gray-500 dark:text-gray-400 flex-1 text-right">
-                            {member._id === groupInfo.admin._id
+                            {member._id === adminMember?._id
                                 ? "Admin"
                                 : "Member"}
                         </p>
                     </div>
                 ))}
                 <DialogFooter>
-                    {myId === groupInfo.admin._id && (
+                    {myId === adminMember?._id && (
                         <Button variant="outline">Add Member</Button>
                     )}
                     <Button variant="outline">Leave Group</Button>

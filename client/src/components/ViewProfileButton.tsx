@@ -10,7 +10,7 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { CardHeader, CardFooter } from "@/components/ui/card"
-import { Camera, Trash, User } from "lucide-react"
+import { Camera, Trash } from "lucide-react"
 import { useAppDispatch, useAppSelector } from "../hooks"
 import { logout, updateName, updateProfileImage } from "../features/userSlice"
 import { useRef, useState } from "react"
@@ -84,13 +84,17 @@ export default function ViewProfileButton() {
             }}
         >
             <DialogTrigger>
-                <Button
-                    variant="outline"
-                    className="text-sm font-medium hover:underline underline-offset-4"
-                >
-                    <User className="h-6 w-6" />
-                    <span className="sr-only">View Profile</span>
-                </Button>
+                <Avatar className="h-10 w-10">
+                    <AvatarImage alt="Profile Photo" src={user.profileImage} />
+                    <AvatarFallback>
+                        {user.name
+                            .split(" ")
+                            .map((word) => word.substring(0, 1).toUpperCase())
+                            .join("")
+                            .substring(0, 2)}
+                    </AvatarFallback>
+                </Avatar>
+                <span className="sr-only">View Profile</span>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
@@ -114,7 +118,7 @@ export default function ViewProfileButton() {
                             </Avatar>
                             <div className="flex gap-2">
                                 <Button
-                                    variant="outline"
+                                    variant="secondary"
                                     disabled={loadingProfileImage}
                                 >
                                     <Label

@@ -22,9 +22,9 @@ export interface IUser extends Document {
 }
 
 export interface IChatMessage extends Document {
-    _id?: Schema.Types.ObjectId
-    userId: Schema.Types.ObjectId
-    channelId: Schema.Types.ObjectId
+    _id: Schema.Types.ObjectId
+    senderId: Schema.Types.ObjectId
+    sendToId: Schema.Types.ObjectId
     message: string
     createdAt: Date
     updatedAt: Date
@@ -32,9 +32,15 @@ export interface IChatMessage extends Document {
 
 export interface IChannel extends Document {
     name: string
-    members: Types.Array<Schema.Types.ObjectId>
-    admin: Schema.Types.ObjectId
+    members: Types.Array<{
+        user: Schema.Types.ObjectId
+        role: string
+    }>
     isGroup: boolean
+    groupProfile: {
+        groupName: string
+        groupImage: string
+    }
     createdAt: Date
     updatedAt: Date
 }

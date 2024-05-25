@@ -4,13 +4,14 @@ import { io } from "../socketio/index"
 
 const chatMessageSchema = new Schema<IChatMessage>(
     {
-        userId: {
+        senderId: {
             type: Schema.Types.ObjectId,
             required: [true, "Please Provide User Id."],
         },
-        channelId: {
+        sendToId: {
             type: Schema.Types.ObjectId,
-            required: [true, "Please Provide Channel Id."],
+            required: [true, "Please Provide Send To."],
+            ref: "Channel",
         },
         message: {
             type: String,
@@ -21,10 +22,10 @@ const chatMessageSchema = new Schema<IChatMessage>(
 )
 
 chatMessageSchema.post("save", function (doc) {
-    io?.to(doc.channelId.toString()).emit("channel:newMessage", doc.toJSON())
+    io?.to(doc.sendToId.toString()).emit("channel:newMessage", doc.toJSON())
 })
 
-chatMessageSchema.index({ channelId: 1, createdAt: 1 })
+chatMessageSchema.index({ sendToId: 1, createdAt: -1 })
 
 const ChatMessage = model<IChatMessage>("ChatMessage", chatMessageSchema)
 export default ChatMessage

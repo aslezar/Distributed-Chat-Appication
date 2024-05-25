@@ -18,9 +18,7 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
     return (
         <Popover>
             <PopoverTrigger>
-                <Button variant="ghost" className="p-1">
-                    <SmileIcon className="h-5 w-5" />
-                </Button>
+                <SmileIcon className="h-5 w-5" />
             </PopoverTrigger>
             <PopoverContent className="w-full">
                 <Picker
@@ -28,6 +26,7 @@ const EmojiPicker = ({ onChange }: EmojiPickerProps) => {
                     theme={theme}
                     data={data}
                     maxFrequentRows={1}
+                    autoFocus={false}
                     onEmojiSelect={(emoji: any) => onChange(emoji.native)}
                 />
             </PopoverContent>

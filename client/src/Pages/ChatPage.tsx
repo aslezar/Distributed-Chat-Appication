@@ -14,7 +14,8 @@ import {
     MessageSquareText,
 } from "lucide-react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useAppSelector } from "@/hooks"
+import { ChannelType, ChannelUserType } from "@/types"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
@@ -25,47 +26,6 @@ const enum CallType {
     Incoming = "Incoming call",
     Outgoing = "Outgoing call",
 }
-
-const chatProfile = [
-    {
-        _id: "1",
-        senderId: "1",
-        name: "John Doe",
-        message: "Hey, how's it going?",
-        time: "2:30 PM",
-        isGroup: false,
-        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
-    },
-    {
-        _id: "2",
-        senderId: "8",
-        name: "Jane Smith",
-        message: "Did you see the new design?",
-        time: "11:45 AM",
-        isGroup: false,
-        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
-    },
-    {
-        _id: "3",
-        senderId: "1",
-        name: "Design Team",
-        message: "New design review at 3pm",
-        time: "9:00 AM",
-        isGroup: true,
-        senderName: "John Doe",
-        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
-    },
-    {
-        _id: "4",
-        senderId: "8",
-        name: "Design Team",
-        message: "New design review at 3pm. I'll be there!",
-        time: "9:00 AM",
-        isGroup: true,
-        senderName: "John Doe",
-        profileImage: `https://picsum.photos/id/${randomInt(10, 1000)}/800/450`,
-    },
-]
 
 const callsProfile = [
     {
@@ -142,40 +102,59 @@ function ChatProfile({
     profile,
     selectChat,
 }: {
-    profile: (typeof chatProfile)[0]
+    profile: ChannelUserType
     selectChat: () => void
 }) {
-    const myId = "1"
+    const { user } = useAppSelector((state) => state.user)
+    const myId = user?.userId
+
+    const otherPerson = profile.members.find(
+        (member) => member.user._id !== myId,
+    )
+    const avatarImage = profile.isGroup
+        ? profile.groupProfile.groupImage
+        : otherPerson?.user.profileImage
+
+    const name = profile.isGroup
+        ? profile.groupProfile.groupName
+        : otherPerson?.user.name
+
+    const messageSender = profile.members.find(
+        (member) => member.user._id === (profile?.lastMessage?.senderId ?? ""),
+    )
     return (
         <button
             className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
             onClick={selectChat}
         >
             <Avatar>
-                <AvatarImage alt="John Doe" src={profile.profileImage} />
+                <AvatarImage alt="John Doe" src={avatarImage} />
                 <AvatarFallback>
-                    {profile.name
-                        .split(" ")
-                        .map((word) => word.substring(0, 1).toUpperCase())
-                        .join("")
-                        .substring(0, 2)}
+                    {name &&
+                        name
+                            .split(" ")
+                            .map((word) => word.substring(0, 1).toUpperCase())
+                            .join("")
+                            .substring(0, 2)}
                 </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-                <div className="font-medium">John Doe</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                    {profile.senderId === myId ? (
-                        <span className="font-semibold">You: </span>
-                    ) : profile.isGroup ? (
-                        <span className="font-semibold">
-                            {profile.senderName}:{" "}
-                        </span>
-                    ) : null}
-                    {profile.message}
-                </div>
+            <div className="flex-1 text-left">
+                <div className="font-medium">{name}</div>
+                {profile.lastMessage && messageSender && (
+                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                        {messageSender.user._id === myId ? (
+                            <span className="font-semibold">You: </span>
+                        ) : profile.isGroup ? (
+                            <span className="font-semibold">
+                                {messageSender.user.name.split(" ")[0] + ": "}
+                            </span>
+                        ) : null}
+                        {profile.lastMessage ? profile.lastMessage.message : ""}
+                    </div>
+                )}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-                {profile.time}
+                {profile.createdAt}
             </div>
         </button>
     )
@@ -183,7 +162,9 @@ function ChatProfile({
 
 export default function ChatPage() {
     const [chatSelected, setChatSelected] = useState<null | string>(null)
-    console.log(chatSelected)
+
+    const { user } = useAppSelector((state) => state.user)
+    if (!user) return <div>You need to login</div>
 
     return (
         <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
@@ -199,9 +180,7 @@ export default function ChatPage() {
                         <span>Vibe Talk</span>
                     </Link>
                     <div className="flex gap-2">
-                        <Button variant="ghost" className="p-2">
-                            <AddChat />
-                        </Button>
+                        <AddChat setChatSelected={setChatSelected} />
                         <ViewProfileButton />
                     </div>
                 </div>
@@ -227,7 +206,7 @@ export default function ChatPage() {
                     </TabsList>
                     <TabsContent className="h-full overflow-auto" value="chat">
                         <div className="grid gap-2 p-4">
-                            {chatProfile.map((profile) => (
+                            {user.channels.map((profile) => (
                                 <ChatProfile
                                     key={profile._id}
                                     profile={profile}

@@ -1,19 +1,19 @@
 {
-    "name": "fountane",
+    "name": "vibealk",
     "version": "1.0.0",
-    "description": "fountane",
+    "description": "vibeTalk",
     "main": "server.js",
     "scripts": {
         "build": "npx tsc",
         "start": "node dist/server.js",
         "dev": "nodemon --ignore 'client/*' server.ts",
         "format": "prettier --write . && cd client && prettier --write .",
-        "seeder": "node DBseeder/seeder.js",
+        "seeder": "ts-node seeder.ts",
         "get-blogs-by-each-user": "ts-node ./DBseeder/dev-utils/get-blogs-by-each-user.ts"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/aslezar/BlogMinds.git"
+        "url": "git+https://github.com/aslezar/vibetalk.git"
     },
     "workspaces": [
         "client"
@@ -21,12 +21,12 @@
     "keywords": [
         "blog"
     ],
-    "author": "shivam",
+    "author": "Shivam",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/aslezar/BlogMinds/issues"
+        "url": "https://github.com/aslezar/vibetalk/issues"
     },
-    "homepage": "https://github.com/aslezar/BlogMinds#readme",
+    "homepage": "https://github.com/aslezar/vibetalk#readme",
     "dependencies": {
         "@socket.io/admin-ui": "^0.5.1",
         "axios": "^1.6.8",

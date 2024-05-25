@@ -126,6 +126,10 @@ export const updateProfileImage =
     (image: string) => async (dispatch: Dispatch) => {
         dispatch(userSlice.actions.UPDATE_IMAGE(image))
     }
+
+// export const addGroup = (group: any) => async (dispatch: Dispatch) => {
+//     dispatch(userSlice.actions.SET_USER(group))
+// }
 export const selectUserState = (state: RootState) => state.user
 
 export default userSlice.reducer

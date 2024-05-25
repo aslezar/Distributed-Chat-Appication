@@ -96,29 +96,16 @@ export const updateImage = (profileImage: File) => {
     return API.post("/user/image", formData)
 }
 export const deleteProfileImage = () => API.delete("/user/image")
+
+export const createGroup = (name: string, members: UserType["userId"][]) =>
+    API.post("/user/group", { name, members })
 /*
  ************************ Search Requests ************************
  */
-export const search = (
-    query: string,
-    type: string,
-    page: number,
-    limit: number,
-) =>
+export const search = (query: string, type: string) =>
     API.get("/public/search", {
         params: {
             query,
             type,
-            page,
-            limit,
         },
     })
-
-/*
- ************************ Event Host Requests ************************
- */
-
-export const getEvent = (eventId: string) => API.get(`/event/${eventId}`)
-
-// export const createEvent = (eventData: FormData) =>
-//   API.post("/event/create", eventData)

@@ -1,37 +1,39 @@
 import { Schema, model } from "mongoose"
 import { IChannel } from "../types/models"
+import Roles from "../roles"
 
 const ChannelSchema = new Schema<IChannel>(
     {
-        name: {
-            type: String,
-            required: [true, "Please Provide Channel Name."],
-        },
-        members: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-            },
-        ],
-        admin: {
-            type: Schema.Types.ObjectId,
-            ref: "User",
-            required: [true, "Please Provide Admin Id."],
-        },
         isGroup: {
             type: Boolean,
             default: false,
         },
+        members: [
+            {
+                user: {
+                    type: Schema.Types.ObjectId,
+                    ref: "User",
+                },
+                role: {
+                    type: String,
+                    enum: Array.from(Object.values(Roles)),
+                    default: Roles.MEMBER,
+                },
+            },
+        ],
+        groupProfile: {
+            groupName: {
+                type: String,
+                default: "",
+            },
+            groupImage: {
+                type: String,
+                default: "",
+            },
+        },
     },
     { timestamps: true },
 )
-
-ChannelSchema.pre("save", function (next) {
-    if (this.isNew) {
-        this.members.push(this.admin)
-    }
-    next()
-})
 
 ChannelSchema.index({ members: 1 })
 

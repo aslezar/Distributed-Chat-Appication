@@ -1,4 +1,4 @@
-import User from "../models/user"
+import { User, Channel, ChatMessage } from "../models"
 import { StatusCodes } from "http-status-codes"
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors"
 import { Request, Response } from "express"
@@ -6,10 +6,9 @@ import mongoose from "mongoose"
 import {
     uploadProfileImage as cloudinaryUploadProfileImage,
     deleteProfileImage as cloudinaryDeleteProfileImage,
-    uploadAssetsImages as cloudinaryUploadAssetsImages,
-    deleteAssetImages as cloudinaryDeleteAssetImages,
 } from "../utils/imageHandlers/cloudinary"
 import setAuthTokenCookie from "../utils/setCookie/setAuthToken"
+import Roles from "../roles"
 
 const getMe = async (req: Request, res: Response) => {
     const user = await User.findById(req.user.userId)
@@ -23,15 +22,46 @@ const getMe = async (req: Request, res: Response) => {
 
     const socketToken = user.generateSocketToken()
 
-    console.log("remove this line for phoneNo")
+    const channel = await Channel.find({
+        "members.user": user._id,
+    }).populate("members.user", "name profileImage phoneNo")
+
+    //find lastMessage of each channel
+    const messages = await ChatMessage.aggregate([
+        { $match: { sendToId: { $in: channel.map((c) => c._id) } } },
+        { $sort: { createdAt: -1 } },
+        {
+            $group: {
+                _id: "$sendToId",
+                lastMessage: { $first: "$$ROOT" },
+            },
+        },
+    ])
+
+    const channels = channel.map((c) => {
+        const lastMessage = messages.find(
+            (m) => m._id.toString() === c._id.toString(),
+        )
+        return {
+            _id: c._id,
+            name: c.name,
+            isGroup: c.isGroup,
+            groupProfile: c.groupProfile,
+            members: c.members,
+            lastMessage: lastMessage ? lastMessage.lastMessage : null,
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+        }
+    })
 
     const sendUser = {
         userId: user._id,
         name: user.name,
         email: user.email,
-        phoneNo: user.phoneNo || "999",
+        phoneNo: user.phoneNo,
         profileImage: user.profileImage,
         socketToken,
+        channels,
     }
 
     res.status(StatusCodes.CREATED).json({
@@ -106,4 +136,45 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-export { getMe, updateCompleteProfile, updateProfileImage, deleteProfileImage }
+const createGroup = async (req: Request, res: Response) => {
+    const { name, members } = req.body
+    const userId = req.user.userId
+
+    if (!name || !members)
+        throw new BadRequestError("Name and Members are required")
+
+    const groupMember = members.map((member: string) => {
+        if (member === userId.toString()) {
+            return {
+                userId: member,
+                role: Roles.ADMIN,
+            }
+        }
+        return {
+            userId: member,
+            role: Roles.MEMBER,
+        }
+    })
+
+    const group = new Channel({
+        name,
+        members: groupMember,
+        isGroup: true,
+    })
+
+    await group.save()
+
+    res.status(StatusCodes.CREATED).json({
+        data: { groupId: group._id },
+        success: true,
+        msg: `Group ${name} Created`,
+    })
+}
+
+export {
+    getMe,
+    updateCompleteProfile,
+    updateProfileImage,
+    deleteProfileImage,
+    createGroup,
+}

@@ -50,9 +50,13 @@ const UserSchema = new Schema<IUser>(
 )
 
 const preSave = async function (this: any, next: (err?: Error) => void) {
-    if (!this.isModified("password")) {
-        return next()
+    if (this.isNew) {
+        //assign unique phone number having only 10 digits
+        this.phoneNo = Math.floor(
+            9000000000 + Math.random() * 1000000000,
+        ).toString()
     }
+    if (!this.isModified("password")) return next()
 
     try {
         const salt = await bcrypt.genSalt(5)
