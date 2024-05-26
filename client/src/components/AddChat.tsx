@@ -15,9 +15,11 @@ import { Input } from "@/components/ui/input"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
 import { search as searchApi, createGroup } from "../api"
-import { OtherUserType } from "@/types"
+import { ChannelType, MemberType, OtherUserType } from "@/types"
 import { useAppDispatch, useAppSelector } from "@/hooks"
-import { addChannel } from "@/features/userSlice"
+import { handleNewChannel } from "@/features/userSlice"
+import { useSocketContext } from "@/context/SocketContext"
+import toast from "react-hot-toast"
 
 export default function AddChat({
     setChatSelected,
@@ -84,6 +86,8 @@ function CreateGroup({
 
     const dispatch = useAppDispatch()
 
+    const { socket } = useSocketContext()
+
     useEffect(() => {
         if (!user) return
         setSelectedMembers([
@@ -129,19 +133,38 @@ function CreateGroup({
 
     const handleCreateGroup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (!socket) return
         const groupName = e.currentTarget.groupName.value
         if (!groupName) return
         const members = selectedMembers.map((member) => member._id)
         setCreatingGroup(true)
-        createGroup(groupName, members)
-            .then((response) => {
-                console.log(response.data)
-                dispatch(addChannel(response.data))
-                setChatSelected(response.data._id)
+
+        socket.emit(
+            "channel:create",
+            { name: groupName, members },
+            (data: any) => {
+                console.log(data)
+                if (!data.success) {
+                    toast.error(data.msg)
+                    return
+                }
+                const channel = data.data.channel as ChannelType
+                const members = data.data.members as MemberType[]
+                toast.success(data.msg)
+                dispatch(
+                    handleNewChannel({
+                        _id: channel._id,
+                        isGroup: channel.isGroup,
+                        groupProfile: channel.groupProfile,
+                        createdAt: channel.createdAt,
+                        lastMessage: undefined,
+                        members: members,
+                    }),
+                )
+                setChatSelected(data.data.channel._id)
                 closeDialog(false)
-            })
-            .catch((error) => console.error(error.response))
-            .finally(() => setCreatingGroup(false))
+            },
+        )
     }
 
     return (

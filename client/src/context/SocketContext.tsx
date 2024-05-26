@@ -2,7 +2,9 @@ import { useState, createContext, useContext, useEffect } from "react"
 import toast from "react-hot-toast"
 import { io, Socket } from "socket.io-client"
 import { ReactNode } from "react"
-import { useAppSelector } from "../hooks"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import { handleNewChannel, handleNewMessage } from "@/features/userSlice"
+import { ChannelType, MemberType, MessageType } from "@/types"
 
 const SocketContext = createContext<any>(null)
 
@@ -11,6 +13,8 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
     const { loading, isAuthenticated, user } = useAppSelector(
         (state) => state.user,
     )
+
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
         if (loading || !isAuthenticated)
@@ -29,15 +33,40 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
             console.log("socket connected")
         })
         socketConnection.on("connect_error", (err) => {
-            if (err.message === "xhr poll error") {
-                socketConnection.disconnect()
-            }
+            if (import.meta.env.DEV) socketConnection.disconnect()
             toast.error(`Socket connection error: ${err.message}`)
             console.log(`connect_error due to ${err.message}`)
         })
-        socketConnection.on("disconnect", () => {
-            console.log("socket disconnected")
+        socketConnection.on("disconnect", (reason) => {
+            console.log(`socket disconnected due to ${reason}`)
         })
+
+        socketConnection.on("channel:newMessage", (data) => {
+            console.log(data)
+            dispatch(handleNewMessage(data))
+        })
+
+        socketConnection.on("channel:new", (data) => {
+            console.log(data)
+            const channel = data.channel as ChannelType
+            const members = data.members as MemberType[]
+            socketConnection.emit(
+                "Channel:joinNew",
+                { channelId: data.channel._id },
+                (data: any) => !data.success && console.log(data.msg),
+            )
+            dispatch(
+                handleNewChannel({
+                    _id: channel._id,
+                    isGroup: channel.isGroup,
+                    groupProfile: channel.groupProfile,
+                    createdAt: channel.createdAt,
+                    lastMessage: undefined,
+                    members: members,
+                }),
+            )
+        })
+
         return () => {
             socketConnection.close()
             socketConnection.disconnect()

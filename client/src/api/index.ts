@@ -99,6 +99,9 @@ export const deleteProfileImage = () => API.delete("/user/image")
 
 export const createGroup = (name: string, members: UserType["userId"][]) =>
     API.post("/user/group", { name, members })
+
+export const getChannel = (channelId: string) =>
+    API.get(`/user/channel/${channelId}`)
 /*
  ************************ Search Requests ************************
  */

@@ -10,7 +10,7 @@ import { MessageType, ChannelType, MemberType } from "@/types"
 import toast from "react-hot-toast"
 import { useAppDispatch, useAppSelector } from "@/hooks"
 import moment from "moment"
-import { addChannel } from "@/features/userSlice"
+import { handleNewChannel, handleNewMessage } from "@/features/userSlice"
 
 function ChatProfileBar({
     channel,
@@ -97,8 +97,10 @@ function ChatProfileBar({
 }
 
 function InputMessage({
+    chatSelected,
     handleSendMessage,
 }: {
+    chatSelected: string | null
     handleSendMessage: (e: React.FormEvent<HTMLFormElement>) => void
 }) {
     const inputRef = useRef<HTMLInputElement>(null)
@@ -117,6 +119,10 @@ function InputMessage({
         }
     }
 
+    useEffect(() => {
+        inputRef.current?.focus()
+    }, [chatSelected])
+
     return (
         <form
             className="flex gap-2 h-[60px] items-center justify-between border-t border-gray-200 px-4 dark:border-gray-800"
@@ -128,6 +134,7 @@ function InputMessage({
                 type="text"
                 name="message"
                 ref={inputRef}
+                autoFocus
             />
             <Button size="icon" variant="ghost" type="button">
                 <Paperclip className="h-5 w-5" />
@@ -239,11 +246,12 @@ export default function Chat({
         const msg = e.currentTarget.message.value
         if (!msg) return
         const cb = (data: any) => {
-            console.log(data)
+            // console.log(data)
             if (data.success === false) return toast.error(data.msg)
             else {
                 setMessages((p) => [...p, data.data as MessageType])
-                console.log("Message Sent")
+                dispatch(handleNewMessage(data.data as MessageType))
+                // console.log("Message Sent")
             }
         }
         socket.emit(
@@ -257,7 +265,7 @@ export default function Chat({
         if (!socket || chatSelected === null) return
         function handleJoinChannel(data: any) {
             if (data.success === false) return toast.error(data.msg)
-            console.log(data.data)
+            // console.log(data.data)
 
             const channel = data.data.channel as ChannelType
             const messages = data.data.messages as MessageType[]
@@ -265,7 +273,7 @@ export default function Chat({
 
             if (data.data.isNew) {
                 dispatch(
-                    addChannel({
+                    handleNewChannel({
                         _id: channel._id,
                         isGroup: channel.isGroup,
                         groupProfile: channel.groupProfile,
@@ -328,7 +336,10 @@ export default function Chat({
                         members={members}
                     />
                     <Messages messages={messages} members={members} />
-                    <InputMessage handleSendMessage={handleSendMessage} />
+                    <InputMessage
+                        chatSelected={chatSelected}
+                        handleSendMessage={handleSendMessage}
+                    />
                 </>
             )}
         </div>

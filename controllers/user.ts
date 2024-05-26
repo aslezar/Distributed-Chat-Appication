@@ -135,43 +135,25 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-const createGroup = async (req: Request, res: Response) => {
-    const { name, members } = req.body
+const getChannel = async (req: Request, res: Response) => {
+    console.log(req.params.channelId)
+    console.log("You are here")
+
+    const channelId = req.params.channelId
     const userId = req.user.userId
 
-    if (!name || !members)
-        throw new BadRequestError("Name and Members are required")
+    const channel = await Channel.findOne({
+        _id: channelId,
+        "members.user": userId,
+    }).populate("members.user", "name profileImage phoneNo")
 
-    const groupMember = members.map((member: string) => {
-        if (member === userId.toString()) {
-            return {
-                user: member,
-                role: Roles.ADMIN,
-            }
-        }
-        return {
-            user: member,
-            role: Roles.MEMBER,
-        }
-    })
+    if (!channel)
+        throw new NotFoundError("Channel Not Found or You are not authorized.")
 
-    const createGroup = await Channel.create({
-        isGroup: true,
-        members: groupMember,
-        groupProfile: {
-            groupName: name,
-        },
-    })
-
-    const group = await Channel.findById(createGroup._id).populate(
-        "members.user",
-        "name profileImage phoneNo",
-    )
-
-    res.status(StatusCodes.CREATED).json({
-        data: group,
+    return res.status(StatusCodes.OK).json({
+        data: channel,
         success: true,
-        msg: `Group ${name} Created`,
+        msg: "Channel Fetched",
     })
 }
 
@@ -180,5 +162,5 @@ export {
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    createGroup,
+    getChannel,
 }

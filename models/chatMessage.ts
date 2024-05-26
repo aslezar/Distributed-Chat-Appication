@@ -21,10 +21,6 @@ const chatMessageSchema = new Schema<IChatMessage>(
     { timestamps: true },
 )
 
-chatMessageSchema.post("save", function (doc) {
-    io?.to(doc.sendToId.toString()).emit("channel:newMessage", doc.toJSON())
-})
-
 chatMessageSchema.index({ sendToId: 1, createdAt: -1 })
 
 const ChatMessage = model<IChatMessage>("ChatMessage", chatMessageSchema)

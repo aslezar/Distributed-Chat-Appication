@@ -55,6 +55,6 @@ export interface MessageType {
     _id: string
     message: string
     senderId: string
-    sendToId: ChannelType
+    sendToId: string
     createdAt: string
 }

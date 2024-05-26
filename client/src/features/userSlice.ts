@@ -4,6 +4,7 @@ import toast from "react-hot-toast"
 import {
     ChannelUserType,
     LoginType,
+    MessageType,
     UserType,
     VerifyOtp,
 } from "../types/index.ts"
@@ -13,6 +14,7 @@ import {
     getMe,
     signOut,
     verifyOtp,
+    getChannel,
 } from "../api/index.ts"
 
 interface CounterState {
@@ -35,6 +37,15 @@ export const userSlice = createSlice({
             // console.log(action.payload)
             state.isAuthenticated = true
             state.user = { ...state.user, ...action.payload }
+            state.user?.channels.sort((a, b) => {
+                const dateA = new Date(
+                    a.lastMessage?.createdAt || a.createdAt,
+                ).getTime()
+                const dateB = new Date(
+                    b.lastMessage?.createdAt || b.createdAt,
+                ).getTime()
+                return dateB - dateA
+            })
         },
         SET_LOADING: (state) => {
             state.loading = true
@@ -54,8 +65,41 @@ export const userSlice = createSlice({
         UPDATE_IMAGE: (state, action) => {
             if (state.user) state.user.profileImage = action.payload
         },
-        ADD_CHANNEL: (state, action) => {
-            if (state.user) state.user.channels.push(action.payload)
+        NEW_CHANNEL: (state, action) => {
+            //push to first
+            if (state.user) state.user.channels.unshift(action.payload)
+        },
+        SET_NEW_MESSAGE: (state, action) => {
+            const message = action.payload as MessageType
+            const channelId = message.sendToId
+            const channel = state.user?.channels.find(
+                (channel) => channel._id === channelId,
+            )
+            if (channel) {
+                channel.lastMessage = message
+                state.user?.channels.sort((a, b) => {
+                    const dateA = new Date(
+                        a.lastMessage?.createdAt || a.createdAt,
+                    ).getTime()
+                    const dateB = new Date(
+                        b.lastMessage?.createdAt || b.createdAt,
+                    ).getTime()
+                    return dateB - dateA
+                })
+                toast.success(`${message.senderId}: ${message.message}`)
+            } else {
+                //ask backend for the channel
+                getChannel(channelId)
+                    .then((res) => {
+                        console.log(res.data)
+
+                        state.user?.channels.unshift({
+                            ...res.data,
+                            lastMessage: message,
+                        })
+                    })
+                    .catch((err) => console.log(err))
+            }
         },
     },
 })
@@ -130,16 +174,23 @@ export const loadUser = () => async (dispatch: Dispatch) => {
 export const updateName = (name: string) => async (dispatch: Dispatch) => {
     dispatch(userSlice.actions.UPDATE_NAME(name))
 }
+
 export const updateProfileImage =
     (image: string) => async (dispatch: Dispatch) => {
         dispatch(userSlice.actions.UPDATE_IMAGE(image))
     }
 
-export const addChannel =
+export const handleNewChannel =
     (group: ChannelUserType) => async (dispatch: Dispatch) => {
         console.log(group)
-        dispatch(userSlice.actions.ADD_CHANNEL(group))
+        dispatch(userSlice.actions.NEW_CHANNEL(group))
     }
+
+export const handleNewMessage =
+    (message: MessageType) => async (dispatch: Dispatch) => {
+        dispatch(userSlice.actions.SET_NEW_MESSAGE(message))
+    }
+
 export const selectUserState = (state: RootState) => state.user
 
 export default userSlice.reducer

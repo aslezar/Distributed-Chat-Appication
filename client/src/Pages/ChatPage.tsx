@@ -169,7 +169,7 @@ export default function ChatPage() {
     const { user } = useAppSelector((state) => state.user)
     if (!user) return <div>You need to login</div>
 
-    console.log(user.channels)
+    // console.log(user.channels)
 
     return (
         <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
