@@ -124,7 +124,7 @@ const continueWithGoogle = async (req: Request, res: Response) => {
         user = await User.create({
             name,
             email,
-            profileImage: picture,
+            image: picture,
             status: "active",
         })
     }

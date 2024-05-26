@@ -1,4 +1,4 @@
-import { User, Channel, ChatMessage } from "../models"
+import { User, Group } from "../models"
 import { StatusCodes } from "http-status-codes"
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors"
 import { Request, Response } from "express"
@@ -8,10 +8,12 @@ import {
     deleteProfileImage as cloudinaryDeleteProfileImage,
 } from "../utils/imageHandlers/cloudinary"
 import setAuthTokenCookie from "../utils/setCookie/setAuthToken"
-import Roles from "../roles"
+import { create } from "domain"
 
 const getMe = async (req: Request, res: Response) => {
-    const user = await User.findById(req.user.userId)
+    const user = await User.findById(req.user.userId).select(
+        "name email phoneNo image createdAt",
+    )
     if (!user) throw new NotFoundError("User Not Found")
     if (user.status === "blocked")
         throw new UnauthenticatedError("User is blocked.")
@@ -22,49 +24,18 @@ const getMe = async (req: Request, res: Response) => {
 
     const socketToken = user.generateSocketToken()
 
-    const channel = await Channel.find({
-        "members.user": user._id,
-    }).populate("members.user", "name profileImage phoneNo")
-
-    //find lastMessage of each channel
-    const messages = await ChatMessage.aggregate([
-        { $match: { sendToId: { $in: channel.map((c) => c._id) } } },
-        { $sort: { createdAt: -1 } },
-        {
-            $group: {
-                _id: "$sendToId",
-                lastMessage: { $first: "$$ROOT" },
-            },
-        },
-    ])
-
-    const channels = channel.map((c) => {
-        const lastMessage = messages.find(
-            (m) => m._id.toString() === c._id.toString(),
-        )
-        return {
-            _id: c._id,
-            isGroup: c.isGroup,
-            groupProfile: c.groupProfile,
-            members: c.members,
-            lastMessage: lastMessage ? lastMessage.lastMessage : null,
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
-        }
-    })
-
-    const sendUser = {
-        userId: user._id,
+    const data = {
+        _id: user._id,
         name: user.name,
         email: user.email,
         phoneNo: user.phoneNo,
-        profileImage: user.profileImage,
+        image: user.image,
         socketToken,
-        channels,
+        createdAt: user.createdAt,
     }
 
     res.status(StatusCodes.CREATED).json({
-        data: sendUser,
+        data,
         success: true,
         msg: "User Fetched Successfully",
     })
@@ -105,10 +76,10 @@ const updateProfileImage = async (req: Request, res: Response) => {
     if (!isDeleted) throw new BadRequestError("Failed to delete image")
 
     const cloudinary_img_url = await cloudinaryUploadProfileImage(req)
-    await updateUser(userId, "profileImage", cloudinary_img_url)
+    await updateUser(userId, "image", cloudinary_img_url)
 
     res.status(StatusCodes.OK).json({
-        data: { profileImage: cloudinary_img_url },
+        data: { image: cloudinary_img_url },
         success: true,
         msg: "Profile Image Updated",
     })
@@ -121,13 +92,13 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     if (!isDeleted) throw new BadRequestError("Failed to delete image")
     await updateUser(
         userId,
-        "profileImage",
+        "image",
         "https://res.cloudinary.com/dzvci8arz/image/upload/v1715358550/iaxzl2ivrkqklfvyasy1.jpg",
     )
 
     res.status(StatusCodes.OK).json({
         data: {
-            defaultProfileImage:
+            defaultImage:
                 "https://res.cloudinary.com/dzvci8arz/image/upload/v1715358550/iaxzl2ivrkqklfvyasy1.jpg",
         },
         success: true,
@@ -135,25 +106,25 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-const getChannel = async (req: Request, res: Response) => {
-    console.log(req.params.channelId)
+const getGroup = async (req: Request, res: Response) => {
+    console.log(req.params.groupId)
     console.log("You are here")
 
-    const channelId = req.params.channelId
+    const groupId = req.params.groupId
     const userId = req.user.userId
 
-    const channel = await Channel.findOne({
-        _id: channelId,
+    const group = await Group.findOne({
+        _id: groupId,
         "members.user": userId,
-    }).populate("members.user", "name profileImage phoneNo")
+    }).populate("members.user", "name image phoneNo")
 
-    if (!channel)
-        throw new NotFoundError("Channel Not Found or You are not authorized.")
+    if (!group)
+        throw new NotFoundError("Group Not Found or You are not authorized.")
 
     return res.status(StatusCodes.OK).json({
-        data: channel,
+        data: group,
         success: true,
-        msg: "Channel Fetched",
+        msg: `Group ${group.name} Fetched Successfully`,
     })
 }
 
@@ -162,5 +133,5 @@ export {
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    getChannel,
+    getGroup,
 }

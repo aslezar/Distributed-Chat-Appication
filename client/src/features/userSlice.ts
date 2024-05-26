@@ -1,32 +1,35 @@
 import { createSlice, Dispatch } from "@reduxjs/toolkit"
 import { RootState } from "../store"
 import toast from "react-hot-toast"
-import {
-    ChannelUserType,
-    LoginType,
-    MessageType,
-    UserType,
-    VerifyOtp,
-} from "../types/index.ts"
+import { LoginType, UserType, VerifyOtp } from "../types/index.ts"
 import {
     signIn,
     signInGoogle,
     getMe,
     signOut,
     verifyOtp,
-    getChannel,
 } from "../api/index.ts"
+
+const defaultUser: UserType = {
+    _id: "offLine",
+    name: "Not Logged In",
+    email: "sampleData@gmail.com",
+    phoneNo: "9876543210",
+    image: "https://source.unsplash.com/random",
+    socketToken: null,
+    createdAt: Date.now().toString(),
+}
 
 interface CounterState {
     loading: boolean
     isAuthenticated: boolean
-    user: UserType | null
+    user: UserType
 }
-
+;``
 const initialState: CounterState = {
     loading: true,
     isAuthenticated: false,
-    user: null,
+    user: defaultUser,
 }
 
 export const userSlice = createSlice({
@@ -37,15 +40,7 @@ export const userSlice = createSlice({
             // console.log(action.payload)
             state.isAuthenticated = true
             state.user = { ...state.user, ...action.payload }
-            state.user?.channels.sort((a, b) => {
-                const dateA = new Date(
-                    a.lastMessage?.createdAt || a.createdAt,
-                ).getTime()
-                const dateB = new Date(
-                    b.lastMessage?.createdAt || b.createdAt,
-                ).getTime()
-                return dateB - dateA
-            })
+            state.loading = false
         },
         SET_LOADING: (state) => {
             state.loading = true
@@ -57,49 +52,14 @@ export const userSlice = createSlice({
         LOGOUT_USER: (state) => {
             console.log("logout")
             state.isAuthenticated = false
-            state.user = null
+            state.user = defaultUser
+            state.loading = false
         },
         UPDATE_NAME: (state, action) => {
             if (state.user) state.user.name = action.payload
         },
         UPDATE_IMAGE: (state, action) => {
-            if (state.user) state.user.profileImage = action.payload
-        },
-        NEW_CHANNEL: (state, action) => {
-            //push to first
-            if (state.user) state.user.channels.unshift(action.payload)
-        },
-        SET_NEW_MESSAGE: (state, action) => {
-            const message = action.payload as MessageType
-            const channelId = message.sendToId
-            const channel = state.user?.channels.find(
-                (channel) => channel._id === channelId,
-            )
-            if (channel) {
-                channel.lastMessage = message
-                state.user?.channels.sort((a, b) => {
-                    const dateA = new Date(
-                        a.lastMessage?.createdAt || a.createdAt,
-                    ).getTime()
-                    const dateB = new Date(
-                        b.lastMessage?.createdAt || b.createdAt,
-                    ).getTime()
-                    return dateB - dateA
-                })
-                toast.success(`${message.senderId}: ${message.message}`)
-            } else {
-                //ask backend for the channel
-                getChannel(channelId)
-                    .then((res) => {
-                        console.log(res.data)
-
-                        state.user?.channels.unshift({
-                            ...res.data,
-                            lastMessage: message,
-                        })
-                    })
-                    .catch((err) => console.log(err))
-            }
+            if (state.user) state.user.image = action.payload
         },
     },
 })
@@ -110,14 +70,12 @@ export const logout = () => async (dispatch: Dispatch) => {
     signOut()
         .then(() => {
             dispatch(userSlice.actions.LOGOUT_USER())
-            toast.success("Logged out")
+            toast.success("Logged out", { id: "logout" })
         })
         .catch((err) => {
             console.log(err)
-        })
-        .finally(() => {
-            dispatch(userSlice.actions.SET_LOADING_FALSE())
             toast.dismiss("logout")
+            dispatch(userSlice.actions.SET_LOADING_FALSE())
         })
 }
 export const login = (loginValues: LoginType) => async (dispatch: any) => {
@@ -127,16 +85,20 @@ export const login = (loginValues: LoginType) => async (dispatch: any) => {
     dispatch(userSlice.actions.SET_LOADING())
     signIn(loginValues)
         .then(() => dispatch(loadUser()))
-        .catch((err) => console.log(err))
-        .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
+        .catch((err) => {
+            console.log(err)
+            dispatch(userSlice.actions.SET_LOADING_FALSE())
+        })
 }
 
 export const loginGoogle = (token: string) => async (dispatch: any) => {
     dispatch(userSlice.actions.SET_LOADING())
     signInGoogle(token)
         .then((_res) => dispatch(loadUser()))
-        .catch((err) => console.log(err))
-        .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
+        .catch((err) => {
+            console.log(err)
+            dispatch(userSlice.actions.SET_LOADING_FALSE())
+        })
 }
 
 export const verification =
@@ -147,8 +109,10 @@ export const verification =
                 dispatch(loadUser())
                 localStorage.removeItem("email")
             })
-            .catch((err) => console.log(err))
-            .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
+            .catch((err) => {
+                console.log(err)
+                dispatch(userSlice.actions.SET_LOADING_FALSE())
+            })
     }
 
 export const loadUser = () => async (dispatch: Dispatch) => {
@@ -159,16 +123,13 @@ export const loadUser = () => async (dispatch: Dispatch) => {
     })
     if (!isLoggedIn) return dispatch(userSlice.actions.SET_LOADING_FALSE())
 
-    dispatch(userSlice.actions.SET_LOADING())
     getMe()
         .then((res: any) => {
             const user = res.data
-
             toast.success("Logged in", { id: "loadUser" })
             dispatch(userSlice.actions.SET_USER(user))
         })
         .catch((error) => console.log(error))
-        .finally(() => dispatch(userSlice.actions.SET_LOADING_FALSE()))
 }
 
 export const updateName = (name: string) => async (dispatch: Dispatch) => {
@@ -178,17 +139,6 @@ export const updateName = (name: string) => async (dispatch: Dispatch) => {
 export const updateProfileImage =
     (image: string) => async (dispatch: Dispatch) => {
         dispatch(userSlice.actions.UPDATE_IMAGE(image))
-    }
-
-export const handleNewChannel =
-    (group: ChannelUserType) => async (dispatch: Dispatch) => {
-        console.log(group)
-        dispatch(userSlice.actions.NEW_CHANNEL(group))
-    }
-
-export const handleNewMessage =
-    (message: MessageType) => async (dispatch: Dispatch) => {
-        dispatch(userSlice.actions.SET_NEW_MESSAGE(message))
     }
 
 export const selectUserState = (state: RootState) => state.user

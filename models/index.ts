@@ -1,5 +1,5 @@
 import User from "./user"
-import Channel from "./channel"
-import ChatMessage from "./chatMessage"
+import Group from "./group"
+import Message from "./message"
 
-export { User, Channel, ChatMessage }
+export { User, Group, Message }

@@ -92,16 +92,12 @@ export const updateProfile = (name: UserType["name"]) => {
 
 export const updateImage = (profileImage: File) => {
     const formData = new FormData()
-    formData.append("profileImage", profileImage)
+    formData.append("image", profileImage)
     return API.post("/user/image", formData)
 }
 export const deleteProfileImage = () => API.delete("/user/image")
 
-export const createGroup = (name: string, members: UserType["userId"][]) =>
-    API.post("/user/group", { name, members })
-
-export const getChannel = (channelId: string) =>
-    API.get(`/user/channel/${channelId}`)
+export const getGroup = (groupId: string) => API.get(`/user/group/${groupId}`)
 /*
  ************************ Search Requests ************************
  */

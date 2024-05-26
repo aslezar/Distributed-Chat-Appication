@@ -5,7 +5,7 @@ import {
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    getChannel,
+    getGroup,
 } from "../controllers/user"
 
 const router = Router()
@@ -14,9 +14,9 @@ router.route("/me").get(getMe)
 router.patch("/update-profile", updateCompleteProfile)
 router
     .route("/image")
-    .post(upload.single("profileImage"), updateProfileImage)
+    .post(upload.single("image"), updateProfileImage)
     .delete(deleteProfileImage)
 
-router.route("/channel/:channelId").get(getChannel)
+router.route("/group/:groupId").get(getGroup)
 
 export default router

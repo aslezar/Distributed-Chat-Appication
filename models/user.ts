@@ -29,11 +29,19 @@ const UserSchema = new Schema<IUser>(
             type: String,
             minlength: 8,
         },
-        profileImage: {
+        image: {
             type: String,
             default:
                 "https://res.cloudinary.com/dzvci8arz/image/upload/v1715358550/iaxzl2ivrkqklfvyasy1.jpg",
         },
+        myContacts: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+                unique: [true, "Contact already exists."],
+            },
+        ],
+        // For Authentication
         status: {
             type: String,
             enum: ["active", "inactive", "blocked"],

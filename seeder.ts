@@ -1,10 +1,9 @@
 import mongoose from "mongoose"
-import { User, Channel, ChatMessage } from "./models"
+import { User, Group, Message } from "./models"
 import connectDB from "./db/connect"
 import dotenv from "dotenv"
 import { Types } from "mongoose"
 import bcrypt from "bcryptjs"
-import { group } from "console"
 
 dotenv.config()
 
@@ -16,6 +15,8 @@ const randomDate = () => {
         start.getTime() + Math.random() * (end.getTime() - start.getTime()),
     )
 }
+
+const chooseRandomIndex = (arr: any[]) => Math.floor(Math.random() * arr.length)
 
 // Connect to the database and drop the existing data
 async function main() {
@@ -34,6 +35,7 @@ async function main() {
             phoneNo: `123-456-78${i.toString().padStart(2, "0")}`,
             password: hashedPassword,
             profileImage: "https://source.unsplash.com/random",
+            myContacts: [] as Types.ObjectId[],
             status: "active",
             otp: undefined,
             createdAt: randomDate(),
@@ -47,6 +49,7 @@ async function main() {
             phoneNo: "1234567890",
             password: hashedPassword,
             profileImage: "https://source.unsplash.com/random",
+            myContacts: [],
             status: "active",
             otp: undefined,
             createdAt: randomDate(),
@@ -54,64 +57,36 @@ async function main() {
         })
 
         // Generate 4 dummy channels with random members
-        const dummyChannels = [
+        const dummyGroups = [
             {
                 _id: new Types.ObjectId(),
-                members: generateMembers(),
-                isGroup: true,
-                groupProfile: {
-                    groupName: "General",
-                    groupImage: "https://source.unsplash.com/random",
-                },
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-            {
-                _id: new Types.ObjectId(),
-                members: generateMembers(),
-                isGroup: true,
-                groupProfile: {
-                    groupName: "Random",
-                    groupImage: "https://source.unsplash.com/random",
-                },
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-            {
-                _id: new Types.ObjectId(),
-                isGroup: true,
-                groupProfile: {
-                    groupName: "Tech Talk",
-                    groupImage: "https://source.unsplash.com/random",
-                },
+                name: "General",
+                image: "https://source.unsplash.com/random",
                 members: generateMembers(),
                 createdAt: randomDate(),
                 updatedAt: randomDate(),
             },
             {
                 _id: new Types.ObjectId(),
-                isGroup: true,
-                groupProfile: {
-                    groupName: "Social",
-                    groupImage: "https://source.unsplash.com/random",
-                },
+                name: "Random",
+                image: "https://source.unsplash.com/random",
                 members: generateMembers(),
                 createdAt: randomDate(),
                 updatedAt: randomDate(),
             },
             {
                 _id: new Types.ObjectId(),
-                members: [
-                    {
-                        user: dummyUsers[0]._id,
-                        role: "member",
-                    },
-                    {
-                        user: dummyUsers[10]._id,
-                        role: "member",
-                    },
-                ],
-                isGroup: false,
+                name: "Tech Talk",
+                image: "https://source.unsplash.com/random",
+                members: generateMembers(),
+                createdAt: randomDate(),
+                updatedAt: randomDate(),
+            },
+            {
+                _id: new Types.ObjectId(),
+                name: "Social",
+                image: "https://source.unsplash.com/random",
+                members: generateMembers(),
                 createdAt: randomDate(),
                 updatedAt: randomDate(),
             },
@@ -119,21 +94,39 @@ async function main() {
 
         // Generate 50 dummy chat messages
         const dummyChatMessages = Array.from({ length: 50 }, (_, i) => {
-            const selectRandomChannel = Math.floor(
-                Math.random() * dummyChannels.length,
-            )
+            //select receiverId randomly from user or group
+
+            const isUser = Math.random() > 0.5
+            const receiverIndex = isUser
+                ? chooseRandomIndex(dummyUsers)
+                : chooseRandomIndex(dummyGroups)
+
+            let senderIndex = chooseRandomIndex(dummyUsers)
+            while (senderIndex === receiverIndex) {
+                senderIndex = chooseRandomIndex(dummyUsers)
+            }
+            if (isUser) {
+                if (
+                    !dummyUsers[receiverIndex].myContacts.includes(
+                        dummyUsers[senderIndex]._id,
+                    )
+                ) {
+                    dummyUsers[receiverIndex].myContacts.push(
+                        dummyUsers[senderIndex]._id,
+                    )
+                    dummyUsers[senderIndex].myContacts.push(
+                        dummyUsers[receiverIndex]._id,
+                    )
+                }
+            }
             return {
                 _id: new Types.ObjectId(),
                 //choose random user from channel members
-                senderId:
-                    dummyChannels[selectRandomChannel].members[
-                        Math.floor(
-                            Math.random() *
-                                dummyChannels[selectRandomChannel].members
-                                    .length,
-                        )
-                    ].user,
-                sendToId: dummyChannels[selectRandomChannel]._id,
+                senderId: dummyUsers[senderIndex]._id,
+                receiverId: isUser
+                    ? dummyUsers[receiverIndex]._id
+                    : dummyGroups[receiverIndex]._id,
+                modal: isUser ? "User" : "Group",
                 message: `Message ${i + 1}`,
                 createdAt: randomDate(),
                 updatedAt: randomDate(),
@@ -142,40 +135,30 @@ async function main() {
 
         //Generate dummy random number of members with one admin and other members
         function generateMembers() {
+            // a value between 2 to length of dummyUsers
             const randomNumberOfMembers = Math.floor(
-                Math.random() * dummyUsers.length,
+                Math.random() * (dummyUsers.length - 1) + 2,
             )
-            let members = []
-            //random admin
-            members.push({
-                user: dummyUsers[Math.floor(Math.random() * dummyUsers.length)]
-                    ._id,
-                role: "admin",
-            })
 
-            for (let i = 0; i < randomNumberOfMembers; i++) {
-                // if member is already admin, skip
-                if (
-                    members.find((member) => member.role === "admin") !==
-                    undefined
-                ) {
-                    continue
-                }
-                members.push({
-                    user: dummyUsers[
-                        Math.floor(Math.random() * dummyUsers.length)
-                    ]._id,
-                    role: "member",
-                })
+            let selectedIndex = new Set<number>()
+
+            while (selectedIndex.size < randomNumberOfMembers) {
+                selectedIndex.add(chooseRandomIndex(dummyUsers))
             }
 
+            const members = Array.from(selectedIndex).map((index, i) => ({
+                user: dummyUsers[index]._id,
+                role: i === 0 ? "admin" : "member",
+            }))
+
+            console.log(members)
             return members
         }
 
         // Insert the dummy data
         await User.insertMany(dummyUsers)
-        await ChatMessage.insertMany(dummyChatMessages)
-        await Channel.insertMany(dummyChannels)
+        await Message.insertMany(dummyChatMessages)
+        await Group.insertMany(dummyGroups)
 
         console.log("Dummy data has been successfully created!")
         mongoose.connection.close()

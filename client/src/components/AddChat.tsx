@@ -14,18 +14,14 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
-import { search as searchApi, createGroup } from "../api"
-import { ChannelType, MemberType, OtherUserType } from "@/types"
-import { useAppDispatch, useAppSelector } from "@/hooks"
-import { handleNewChannel } from "@/features/userSlice"
+import { search as searchApi } from "../api"
+import { MyContactsType } from "@/types"
+import { useAppSelector } from "@/hooks"
 import { useSocketContext } from "@/context/SocketContext"
 import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
 
-export default function AddChat({
-    setChatSelected,
-}: {
-    setChatSelected: (id: string) => void
-}) {
+export default function AddChat({}: {}) {
     const [open, setOpen] = useState(false)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -48,16 +44,10 @@ export default function AddChat({
                         </DialogTitle>
                     </DialogHeader>
                     <TabsContent value="create-group">
-                        <CreateGroup
-                            setChatSelected={setChatSelected}
-                            closeDialog={setOpen}
-                        />
+                        <CreateGroup closeDialog={setOpen} />
                     </TabsContent>
                     <TabsContent value="new-chat">
-                        <NewChat
-                            setChatSelected={setChatSelected}
-                            closeDialog={setOpen}
-                        />
+                        <NewChat closeDialog={setOpen} />
                         <DialogFooter>
                             <DialogTrigger asChild>
                                 <Button variant="ghost">Cancel</Button>
@@ -71,55 +61,31 @@ export default function AddChat({
 }
 
 function CreateGroup({
-    setChatSelected,
     closeDialog,
 }: {
-    setChatSelected: (id: string) => void
     closeDialog: (open: boolean) => void
 }) {
     const [search, setSearch] = useState("")
     const [creatingGroup, setCreatingGroup] = useState(false)
-    const [results, setResults] = useState<OtherUserType[]>([])
-    const [selectedMembers, setSelectedMembers] = useState<OtherUserType[]>([])
+    const [results, setResults] = useState<MyContactsType[]>([])
+    const [selectedMembers, setSelectedMembers] = useState<MyContactsType[]>([])
 
     const { user } = useAppSelector((state) => state.user)
+    const { createGroup, contacts } = useSocketContext()
 
-    const dispatch = useAppDispatch()
-
-    const { socket } = useSocketContext()
+    const navigate = useNavigate()
 
     useEffect(() => {
-        if (!user) return
-        setSelectedMembers([
-            {
-                _id: user.userId,
-                name: user.name,
-                profileImage: user.profileImage,
-                phoneNo: user.phoneNo,
-            },
-        ])
+        setSelectedMembers([user])
     }, [user])
 
-    if (!user) return <div>You are not logged in</div>
-
-    const members: OtherUserType[] = user.channels
-        .filter((channel) => !channel.isGroup)
-        .map((channel) => {
-            const member = channel.members.find(
-                (member) => member.user._id !== user?.userId,
-            )
-            return member
-        })
-        .filter((member) => member !== undefined)
-        .map((member) => member?.user) as OtherUserType[]
-
-    const users = search === "" ? (members ? members : []) : results
+    const users = search === "" ? contacts : results
 
     const isSelected = (id: string) =>
         selectedMembers.some((member) => member._id === id)
 
-    const toggleSelection = (toggleUser: OtherUserType) => {
-        if (toggleUser._id === user?.userId) return
+    const toggleSelection = (toggleUser: MyContactsType) => {
+        if (toggleUser._id === user._id) return
         if (isSelected(toggleUser._id)) {
             setSelectedMembers(
                 selectedMembers.filter(
@@ -133,38 +99,20 @@ function CreateGroup({
 
     const handleCreateGroup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (!socket) return
+        setCreatingGroup(true)
         const groupName = e.currentTarget.groupName.value
         if (!groupName) return
-        const members = selectedMembers.map((member) => member._id)
-        setCreatingGroup(true)
 
-        socket.emit(
-            "channel:create",
-            { name: groupName, members },
-            (data: any) => {
-                console.log(data)
-                if (!data.success) {
-                    toast.error(data.msg)
-                    return
-                }
-                const channel = data.data.channel as ChannelType
-                const members = data.data.members as MemberType[]
-                toast.success(data.msg)
-                dispatch(
-                    handleNewChannel({
-                        _id: channel._id,
-                        isGroup: channel.isGroup,
-                        groupProfile: channel.groupProfile,
-                        createdAt: channel.createdAt,
-                        lastMessage: undefined,
-                        members: members,
-                    }),
-                )
-                setChatSelected(data.data.channel._id)
+        const members = selectedMembers.map((member) => member._id)
+
+        createGroup(groupName, members)
+            .then((groupId) => {
+                toast.success("Group Created")
                 closeDialog(false)
-            },
-        )
+                navigate(`/chat/${groupId}`)
+            })
+            .catch((error) => console.error(error.response))
+            .finally(() => setCreatingGroup(false))
     }
 
     return (
@@ -177,7 +125,7 @@ function CreateGroup({
                 className="mx-auto mb-2 max-w-[80%] sm:max-w-[80%]"
             />
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 max-h-[350px] overflow-y-auto">
                 <SearchUser
                     search={search}
                     setSearch={setSearch}
@@ -188,20 +136,19 @@ function CreateGroup({
                             No results found
                         </p>
                     )}
-                    {users &&
-                        users.map(
-                            (member) =>
-                                member._id !== user.userId && (
-                                    <Member
-                                        key={member._id}
-                                        member={member}
-                                        isSelected={isSelected(member._id)}
-                                        toggleSelection={() =>
-                                            toggleSelection(member)
-                                        }
-                                    />
-                                ),
-                        )}
+                    {users.map(
+                        (member) =>
+                            member._id !== user._id && (
+                                <Member
+                                    key={member._id}
+                                    member={member}
+                                    isSelected={isSelected(member._id)}
+                                    toggleSelection={() =>
+                                        toggleSelection(member)
+                                    }
+                                />
+                            ),
+                    )}
                 </SearchUser>
             </div>
             <div className="flex gap-2 mb-2 overflow-x-auto text-center items-center">
@@ -211,14 +158,11 @@ function CreateGroup({
                         key={member._id}
                         variant="ghost"
                         className="p-1"
-                        disabled={member._id === user.userId}
+                        disabled={member._id === user._id}
                         onClick={() => toggleSelection(member)}
                     >
                         <Avatar className="w-8 h-8 border">
-                            <AvatarImage
-                                alt="John Doe"
-                                src={member.profileImage}
-                            />
+                            <AvatarImage alt="John Doe" src={member.image} />
                             <AvatarFallback>
                                 {member.name
                                     .split(" ")
@@ -234,29 +178,23 @@ function CreateGroup({
             </div>
             <DialogFooter className="flex justify-end gap-2 mt-4">
                 <DialogTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        disabled={creatingGroup}
-                        type="button"
-                    >
+                    <Button variant="ghost" type="button">
                         Cancel
                     </Button>
                 </DialogTrigger>
-                <Button type="submit">Create</Button>
+                <Button type="submit" disabled={creatingGroup}>
+                    Create
+                </Button>
             </DialogFooter>
         </form>
     )
 }
 
-function NewChat({
-    setChatSelected,
-    closeDialog,
-}: {
-    setChatSelected: (id: string) => void
-    closeDialog: (open: boolean) => void
-}) {
+function NewChat({ closeDialog }: { closeDialog: (open: boolean) => void }) {
     const [search, setSearch] = useState("")
-    const [results, setResults] = useState<OtherUserType[]>([])
+    const [results, setResults] = useState<MyContactsType[]>([])
+
+    const navigate = useNavigate()
 
     return (
         <SearchUser
@@ -271,16 +209,16 @@ function NewChat({
                         : "Search for a user"}
                 </p>
             ) : (
-                <div className="grid gap-2">
+                <div className="grid gap-2 max-h-[350px] overflow-y-auto">
                     {results.map((member) => (
                         <div
-                            className="flex items-center justify-between gap-2"
+                            className="flex items-center justify-between gap-3 py-2 px-4"
                             key={member._id}
                         >
-                            <Avatar className="w-8 h-8 border">
+                            <Avatar>
                                 <AvatarImage
                                     alt="John Doe"
-                                    src={member.profileImage}
+                                    src={member.image}
                                 />
                                 <AvatarFallback>
                                     {member.name
@@ -304,8 +242,8 @@ function NewChat({
                                 <Button
                                     variant="secondary"
                                     onClick={() => {
-                                        setChatSelected(member._id)
                                         closeDialog(false)
+                                        navigate(`/chat/${member._id}`)
                                     }}
                                 >
                                     Message
@@ -327,7 +265,7 @@ function SearchUser({
 }: {
     search: string
     setSearch: (search: string) => void
-    setResults: (results: OtherUserType[]) => void
+    setResults: (results: MyContactsType[]) => void
     children: React.ReactNode
 }) {
     const [timeoutId, setTimeoutId] = useState<ReturnType<
@@ -366,19 +304,19 @@ function Member({
     isSelected,
     toggleSelection,
 }: {
-    member: OtherUserType
+    member: MyContactsType
     isSelected: boolean
     toggleSelection: () => void
 }) {
     return (
         <Button
-            className="flex items-center justify-between gap-2"
+            className="flex items-center justify-between gap-3 py-2 px-4"
             type="button"
             variant={isSelected ? "secondary" : "ghost"}
             onClick={toggleSelection}
         >
             <Avatar className="w-8 h-8 border">
-                <AvatarImage alt="John Doe" src={member.profileImage} />
+                <AvatarImage alt="John Doe" src={member.image} />
                 <AvatarFallback>
                     {member.name
                         .split(" ")

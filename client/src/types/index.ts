@@ -13,41 +13,32 @@ export interface VerifyOtp {
     otp: string
     password: string
 }
-
-export interface OtherUserType {
-    _id: string
-    name: string
-    profileImage: string
-    phoneNo: string
-}
-
-export interface MemberType {
-    _id: String
-    user: OtherUserType
-    role: string
-}
-
-export interface ChannelType {
-    _id: string
-    isGroup: boolean
-    groupProfile: {
-        groupName: string
-        groupImage: string
-    }
-    createdAt: string
-}
-export interface ChannelUserType extends ChannelType {
-    lastMessage: MessageType | undefined
-    members: MemberType[]
-}
 export interface UserType {
-    userId: string
+    _id: string
     name: string
     email: string
     phoneNo: string
-    profileImage: string
-    socketToken: string
-    channels: ChannelUserType[]
+    image: string
+    socketToken: string | null
+    createdAt: string
+}
+
+export interface MyGroupsType {
+    _id: string
+    name: string
+    image: string
+    members: Array<{
+        user: MyContactsType
+        role: string
+    }>
+    createdAt: string
+}
+
+export interface MyContactsType {
+    _id: string
+    name: string
+    phoneNo: string
+    image: string
     createdAt: string
 }
 
@@ -55,6 +46,21 @@ export interface MessageType {
     _id: string
     message: string
     senderId: string
-    sendToId: string
+    receiverId: string
+    isGroup: boolean
     createdAt: string
+}
+
+export interface ContactType {
+    _id: string
+    name: string
+    image: string
+    isGroup: boolean
+    lastMessage: MessageType | undefined
+    createdAt: string
+}
+
+export interface NewMessage extends MessageType {
+    sender: MyContactsType
+    receiver: MyContactsType
 }

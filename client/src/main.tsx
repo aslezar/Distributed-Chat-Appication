@@ -5,18 +5,15 @@ import "./index.css"
 
 import store from "./store"
 import { Provider } from "react-redux"
-import { SocketContextProvider } from "./context/SocketContext"
 import { ThemeProvider } from "./context/ThemeContext"
 import { Toaster } from "react-hot-toast"
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
         <Provider store={store}>
-            <SocketContextProvider>
-                <ThemeProvider>
-                    <App />
-                </ThemeProvider>
-            </SocketContextProvider>
+            <ThemeProvider>
+                <App />
+            </ThemeProvider>
         </Provider>
         <Toaster />
     </React.StrictMode>,

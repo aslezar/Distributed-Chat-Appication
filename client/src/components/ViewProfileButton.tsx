@@ -48,7 +48,7 @@ export default function ViewProfileButton() {
             setLoadingProfileImage(true)
             updateImage(e.target.files[0])
                 .then((response) => {
-                    dispatch(updateProfileImage(response.data.profileImage))
+                    dispatch(updateProfileImage(response.data.image))
                 })
                 .catch((error) => console.log(error))
                 .finally(() => {
@@ -67,7 +67,7 @@ export default function ViewProfileButton() {
         setLoadingProfileImage(true)
         deleteProfileImage()
             .then((response) => {
-                dispatch(updateProfileImage(response.data.defaultProfileImage))
+                dispatch(updateProfileImage(response.data.defaultImage))
                 toast.success("Profile Image Deleted")
             })
             .catch((error) => console.log(error))
@@ -84,7 +84,7 @@ export default function ViewProfileButton() {
         >
             <DialogTrigger>
                 <Avatar className="h-10 w-10">
-                    <AvatarImage alt="Profile Photo" src={user.profileImage} />
+                    <AvatarImage alt="Profile Photo" src={user.image} />
                     <AvatarFallback>
                         {user.name
                             .split(" ")
@@ -101,10 +101,7 @@ export default function ViewProfileButton() {
                 </DialogHeader>
                 <div className="flex flex-col items-center gap-4 p-6">
                     <Avatar className="h-24 w-24">
-                        <AvatarImage
-                            alt="Profile Photo"
-                            src={user.profileImage}
-                        />
+                        <AvatarImage alt="Profile Photo" src={user.image} />
                         <AvatarFallback>
                             {user.name
                                 .split(" ")

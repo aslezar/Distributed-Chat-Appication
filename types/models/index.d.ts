@@ -11,7 +11,8 @@ export interface IUser extends Document {
     email: string
     phoneNo: string
     password: string
-    profileImage: string
+    image: string
+    myContacts: Types.Array<Schema.Types.ObjectId>
     status: string
     otp: OTP | undefined
     createdAt: Date
@@ -21,25 +22,23 @@ export interface IUser extends Document {
     comparePassword: (password: string) => Promise<boolean>
 }
 
-export interface IChatMessage extends Document {
+export interface IMessage extends Document {
     _id: Schema.Types.ObjectId
     senderId: Schema.Types.ObjectId
-    sendToId: Schema.Types.ObjectId
+    receiverId: Schema.Types.ObjectId
+    modal: string
     message: string
     createdAt: Date
     updatedAt: Date
 }
 
-export interface IChannel extends Document {
+export interface IGroup extends Document {
+    name: string
+    image: string
     members: Types.Array<{
         user: Schema.Types.ObjectId
         role: string
     }>
-    isGroup: boolean
-    groupProfile: {
-        groupName: string
-        groupImage: string
-    }
     createdAt: Date
     updatedAt: Date
 }

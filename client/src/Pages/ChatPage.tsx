@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"
+import { Link, NavLink, useParams } from "react-router-dom"
 import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import ViewProfileButton from "../components/ViewProfileButton"
@@ -13,14 +13,21 @@ import {
     Phone,
     MessageSquareText,
 } from "lucide-react"
-import { useState } from "react"
 import { useAppSelector } from "@/hooks"
-import { ChannelUserType } from "@/types"
 import moment from "moment"
+import { useSocketContext } from "@/context/SocketContext"
+import { ContactType } from "@/types"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
 }
+
+const nameInitials = (name: string) =>
+    name
+        .split(" ")
+        .map((word) => word.substring(0, 1).toUpperCase())
+        .join("")
+        .substring(0, 2)
 
 const enum CallType {
     Missed = "Missed call",
@@ -99,82 +106,56 @@ function CallProfile({ profile }: { profile: (typeof callsProfile)[0] }) {
     )
 }
 
-function ChatProfile({
-    channel,
-    selectChat,
-}: {
-    channel: ChannelUserType
-    selectChat: () => void
-}) {
+function ChatProfile({ contact }: { contact: ContactType }) {
     const { user } = useAppSelector((state) => state.user)
-    const myId = user?.userId
+    const { getContact } = useSocketContext()
+    const myUserId = user._id
 
-    const otherPerson = channel.members.find(
-        (member) => member.user._id !== myId,
-    )
-    const avatarImage = channel.isGroup
-        ? channel.groupProfile.groupImage
-        : otherPerson?.user.profileImage
+    const lastMsgSender = contact.lastMessage
+        ? getContact(contact.lastMessage?.senderId)
+        : undefined
 
-    const name = channel.isGroup
-        ? channel.groupProfile.groupName
-        : otherPerson?.user.name
-
-    const messageSender = channel.members.find(
-        (member) => member.user._id === (channel?.lastMessage?.senderId ?? ""),
-    )
     return (
-        <button
+        <NavLink
             className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-            onClick={selectChat}
+            to={`/chat/${contact._id}`}
         >
             <Avatar>
-                <AvatarImage alt="John Doe" src={avatarImage} />
-                <AvatarFallback>
-                    {name &&
-                        name
-                            .split(" ")
-                            .map((word) => word.substring(0, 1).toUpperCase())
-                            .join("")
-                            .substring(0, 2)}
-                </AvatarFallback>
+                <AvatarImage alt={contact.name} src={contact.image} />
+                <AvatarFallback>{nameInitials(contact.name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 text-left">
-                <div className="font-medium">{name}</div>
-                {channel.lastMessage && messageSender && (
+                <div className="font-medium">{contact.name}</div>
+                {contact.lastMessage && lastMsgSender && (
                     <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {messageSender.user._id === myId ? (
+                        {lastMsgSender._id === myUserId ? (
                             <span className="font-semibold">You: </span>
-                        ) : channel.isGroup ? (
+                        ) : contact.isGroup ? (
                             <span className="font-semibold">
-                                {messageSender.user.name.split(" ")[0] + ": "}
+                                {lastMsgSender.name.split(" ")[0] + ": "}
                             </span>
                         ) : null}
-                        {channel.lastMessage ? channel.lastMessage.message : ""}
+                        {contact.lastMessage.message}
                     </div>
                 )}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-                {channel.lastMessage
-                    ? moment(channel.lastMessage.createdAt).fromNow()
-                    : moment(channel.createdAt).fromNow()}
+                {contact.lastMessage
+                    ? moment(contact.lastMessage.createdAt).fromNow()
+                    : moment(contact.createdAt).fromNow()}
             </div>
-        </button>
+        </NavLink>
     )
 }
 
 export default function ChatPage() {
-    const [chatSelected, setChatSelected] = useState<null | string>(null)
-
-    const { user } = useAppSelector((state) => state.user)
-    if (!user) return <div>You need to login</div>
-
-    // console.log(user.channels)
+    const { chatId: chatSelected } = useParams()
+    const { allContactsAndGroups } = useSocketContext()
 
     return (
         <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
             <div
-                className={`border-r border-gray-200 dark:border-gray-800 ${chatSelected === null ? "block" : "hidden sm:block"}`}
+                className={`border-r border-gray-200 dark:border-gray-800 ${chatSelected === undefined ? "block" : "hidden sm:block"}`}
             >
                 <div className="flex h-[75px] items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
                     <Link
@@ -185,7 +166,7 @@ export default function ChatPage() {
                         <span>Vibe Talk</span>
                     </Link>
                     <div className="flex gap-2">
-                        <AddChat setChatSelected={setChatSelected} />
+                        <AddChat />
                         <ViewProfileButton />
                     </div>
                 </div>
@@ -214,13 +195,10 @@ export default function ChatPage() {
                         value="chat"
                     >
                         <div className="grid gap-2 p-4">
-                            {user.channels.map((profile) => (
+                            {allContactsAndGroups.map((contact) => (
                                 <ChatProfile
-                                    key={profile._id}
-                                    channel={profile}
-                                    selectChat={() =>
-                                        setChatSelected(profile._id)
-                                    }
+                                    key={contact._id}
+                                    contact={contact}
                                 />
                             ))}
                         </div>
@@ -240,10 +218,11 @@ export default function ChatPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-            <Chat
-                chatSelected={chatSelected}
-                setChatSelected={setChatSelected}
-            />
+            <div
+                className={`flex-col max-h-full ${chatSelected === undefined ? "hidden sm:flex" : "flex"}`}
+            >
+                <Chat />
+            </div>
         </div>
     )
 }

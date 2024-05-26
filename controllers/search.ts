@@ -19,7 +19,7 @@ const search = async (req: Request, res: Response) => {
                     { name: { $regex: new RegExp(query, "i") } },
                 ],
             })
-                .select("name phoneNo profileImage")
+                .select("name phoneNo image")
                 .sort({ createdAt: -1 })
 
             return res.status(StatusCodes.OK).json({
