@@ -56,7 +56,6 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
 
     const navigate = useNavigate()
     const { chatId } = useParams()
-    console.log(chatId)
 
     // console.log(myContacts)
     // console.log(myGroups)
@@ -103,29 +102,27 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         },
         [allContactsAndGroups],
     )
-    const getMessages = useCallback(
-        (receiverId: string) => {
-            const group = myGroups.find((group) => group._id === receiverId)
-            return (
-                messages.get(receiverId)?.map((message) => {
-                    return {
-                        ...message,
-                        sender: group
-                            ? getMemberFromGroup(group, message.senderId)
-                            : getContact(message.senderId),
-                    } as FullMessageType
-                }) ?? []
-            )
-        },
-        [messages, getContact, getMemberFromGroup],
-    )
+    const getMessages = (receiverId: string) => {
+        const group = myGroups.find((group) => group._id === receiverId)
+        return (
+            messages.get(receiverId)?.map((message) => {
+                return {
+                    ...message,
+                    sender: group
+                        ? getMemberFromGroup(group, message.senderId)
+                        : getContact(message.senderId),
+                } as FullMessageType
+            }) ?? []
+        )
+    }
+
     const saveMessage = useCallback((message: MessageType) => {
         setMessages((messageMap) => {
             console.log(messageMap)
 
             messageMap.get(message.receiverId)?.push(message) ??
                 messageMap.set(message.receiverId, [message])
-            return messageMap
+            return new Map(messageMap)
         })
     }, [])
     const sendMessage = useCallback(
@@ -204,6 +201,8 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         },
         [socket],
     )
+
+    // Toast message
     const toastMessage = (
         message: MessageType,
         groupOrSender: MyContactsType,
@@ -260,26 +259,34 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         )
     }
 
-    const onNewMessage = async (message: NewMessage) => {
-        console.log("New message", message)
-        saveMessage(message)
-        console.log(chatId)
+    //Socket events
+    const onNewMessage = useCallback(
+        async (message: NewMessage) => {
+            console.log("New message", message)
+            saveMessage(message)
 
-        if (message.senderId === user._id || message.receiverId === chatId)
-            return
-        if (message.isGroup) {
-            toastMessage(message, message.receiver, message.sender)
-        } else {
-            toastMessage(message, message.sender)
-        }
-    }
+            //id sender is me, contact who send is open, or group for whom is send is open, then do not show toast
+            if (
+                message.senderId === user._id ||
+                message.senderId === chatId ||
+                message.receiverId === chatId
+            )
+                return
+            if (message.isGroup) {
+                toastMessage(message, message.receiver, message.sender)
+            } else {
+                toastMessage(message, message.sender)
+            }
+        },
+        [chatId, saveMessage, toastMessage, user._id],
+    )
     const onNewGroup = useCallback((group: MyGroupsType) => {
         const admin = group.members.find((member) => member.role === "admin")
-        toast.success(`${admin?.user.name} added you ${group.name}`)
         setMyGroups((prev) => [...prev, group])
+        if (!admin || admin.user._id === user._id) return
+        toast.success(`${admin?.user.name} added you ${group.name}`)
         // socketConnection.emit("join:new:group", { groupId: group._id })
     }, [])
-
     const onNewContact = useCallback((contact: MyContactsType) => {
         toast.success(`${contact.name} added you`)
         setMyContacts((prev) => [...prev, contact])
@@ -314,9 +321,9 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         }
         const onConnect_error = (err: Error) => {
             // if (import.meta.env.DEV) socketConnection.disconnect()
-            toast.error(`Disconnected`, {
-                id: "socket-connection",
-            })
+            // toast.error(`Disconnected`, {
+            //     id: "socket-connection",
+            // })
             console.log(`connect_error due to ${err.message}`)
         }
         const onDisconnect = (reason: Socket.DisconnectReason) => {
@@ -336,14 +343,21 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
 
             const messageMap = new Map<string, MessageType[]>()
             data.messages.forEach((message) => {
-                messageMap.get(message.receiverId)?.concat(message.message) ??
-                    messageMap.set(message.receiverId, message.message)
+                if (message.isGroup) {
+                    messageMap.get(message.receiverId)?.push(message) ??
+                        messageMap.set(message.receiverId, [message])
+                } else {
+                    const contactId =
+                        message.senderId === user._id
+                            ? message.receiverId
+                            : message.senderId
+                    messageMap.get(contactId)?.push(message) ??
+                        messageMap.set(contactId, [message])
+                }
             })
 
             setMessages(messageMap)
-            socketConnection.on("message:new", onNewMessage)
-            socketConnection.on("new:group", onNewGroup)
-            socketConnection.on("new:contact", onNewContact)
+            setSocket(() => socketConnection)
         }
 
         socketConnection.on("connect", onConnect)
@@ -364,6 +378,21 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [loading, isAuthenticated, user.socketToken])
 
+    useEffect(() => {
+        if (!socket) return
+        if (!socket.connected) {
+            return
+        }
+        socket.on("message:new", onNewMessage)
+        socket.on("new:group", onNewGroup)
+        socket.on("new:contact", onNewContact)
+        return () => {
+            socket.off("message:new", onNewMessage)
+            socket.off("new:group", onNewGroup)
+            socket.off("new:contact", onNewContact)
+        }
+    }, [socket, chatId, onNewMessage, onNewGroup, onNewContact])
+
     return (
         <SocketContext.Provider
             value={{
@@ -371,7 +400,6 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
                 getGroup,
                 getMessages,
                 getContact,
-                // getMemberFromGroup,
                 sendMessage,
                 createNewChat,
                 createGroup,

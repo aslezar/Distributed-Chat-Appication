@@ -22,7 +22,11 @@ const chooseRandomIndex = (arr: any[]) => Math.floor(Math.random() * arr.length)
 async function main() {
     try {
         await connectDB(process.env.MONGO_URL as string)
-        await mongoose.connection.db.dropDatabase()
+        // await mongoose.connection.db.dropDatabase()
+
+        await User.deleteMany({})
+        await Group.deleteMany({})
+        await Message.deleteMany({})
 
         let salt = await bcrypt.genSalt(5)
         const hashedPassword = await bcrypt.hash("hello@hello.com", salt)
@@ -154,6 +158,11 @@ async function main() {
             console.log(members)
             return members
         }
+
+        //make sure user.myContacts are unique
+        dummyUsers.forEach((user) => {
+            user.myContacts = Array.from(new Set(user.myContacts))
+        })
 
         // Insert the dummy data
         await User.insertMany(dummyUsers)

@@ -29,21 +29,25 @@ const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
         {
             $match: {
                 $or: [
-                    { senderId: userId, modal: Modal.USER },
+                    { senderId: userId },
                     { receiverId: userId, modal: Modal.USER },
                     { receiverId: { $in: myGroupsIds }, modal: Modal.GROUP },
                 ],
             },
         },
         {
-            $sort: { createdAt: -1 }, // Sort by createdAt in descending order
-        },
-        {
-            $group: {
-                _id: "$receiverId", // Group by receiverId
-                messages: { $push: "$$ROOT" }, // Push the entire document into the messages array
+            $addFields: {
+                isGroup: { $eq: ["$modal", Modal.GROUP] },
             },
         },
+        {
+            $project: {
+                modal: 0,
+            },
+        },
+        // {
+        //     $sort: { createdAt: -1 }, // Sort by createdAt in descending order
+        // },
         // {
         //     $project: {
         //         messages: { $slice: ["$messages", 10] }, // Select the top 10 messages from each group
@@ -51,22 +55,27 @@ const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
         // },
     ])
 
+    //print all receiverId from user messages
     // console.log(userMessages)
 
-    const messages = userMessages.map((message) => {
-        return {
-            receiverId: message._id,
-            message: message.messages.map((msg: any) => {
-                const isGroup = myGroupsIds.some(
-                    (group) => group.toString() === msg.receiverId.toString(),
-                )
-                return {
-                    ...msg,
-                    isGroup: msg.modal === Modal.GROUP,
-                }
-            }),
-        }
-    })
+    // console.log(userMessages[0])
+
+    // const messages = userMessages.map((message) => {
+    //     return {
+    //         receiverId: message._id,
+    //         message: message.messages.map((msg: any) => {
+    //             const isGroup = myGroupsIds.some(
+    //                 (group) => group.toString() === msg.receiverId.toString(),
+    //             )
+    //             return {
+    //                 ...msg,
+    //                 isGroup: msg.modal === Modal.GROUP,
+    //             }
+    //         }),
+    //     }
+    // })
+
+    // console.log(messages[0])
 
     socket.myContacts = myContactsIds
     socket.myGroups = myGroupsIds
@@ -76,7 +85,7 @@ const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
         msg: "Connected to server",
         groups,
         contacts: contacts?.myContacts ?? [],
-        messages,
+        messages: userMessages,
     })
 }
 export default (io: SocketIOServer | null, socket: Socket) => {

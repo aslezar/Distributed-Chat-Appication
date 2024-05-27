@@ -38,7 +38,6 @@ const UserSchema = new Schema<IUser>(
             {
                 type: Schema.Types.ObjectId,
                 ref: "User",
-                unique: [true, "Contact already exists."],
             },
         ],
         // For Authentication

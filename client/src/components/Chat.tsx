@@ -93,12 +93,14 @@ function Messages({ chatSelected }: { chatSelected: string }) {
 
     const messages = getMessages(chatSelected)
 
-    // console.log(chatSelected);
-    // console.log(messages)
+    const sortedMessages = messages.sort(
+        (b, a) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    )
 
     return (
         <div className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col-reverse gap-4">
-            {messages.map((message) =>
+            {sortedMessages.map((message) =>
                 message.senderId === myUserId ? (
                     <MyMessage key={message._id} message={message} />
                 ) : (
@@ -132,7 +134,7 @@ function OtherMessage({
                 <div className="rounded-lg bg-gray-100 p-3 text-sm dark:bg-gray-800">
                     {message.message}
                 </div>
-                <div className="text-right text-xs text-gray-500 dark:text-gray-400">
+                <div className="text-left text-xs text-gray-500 dark:text-gray-400">
                     {moment(message.createdAt).format("D MMMM YY, kk:mm")}
                 </div>
             </div>

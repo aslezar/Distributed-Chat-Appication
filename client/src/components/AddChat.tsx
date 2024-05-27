@@ -29,16 +29,16 @@ export default function AddChat({}: {}) {
                 <UserRoundPlus className="h-6 w-6" />
                 <span className="sr-only">Add Chat</span>
             </DialogTrigger>
-            <Tabs defaultValue="create-group">
+            <Tabs defaultValue="new-chat">
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
                             <TabsList>
-                                <TabsTrigger value="create-group">
-                                    Create Group
-                                </TabsTrigger>
                                 <TabsTrigger value="new-chat">
                                     New Chat
+                                </TabsTrigger>
+                                <TabsTrigger value="create-group">
+                                    Create Group
                                 </TabsTrigger>
                             </TabsList>
                         </DialogTitle>

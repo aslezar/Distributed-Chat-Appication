@@ -47,6 +47,7 @@ export default function ChatInfo({}: {}) {
                             {admin?.user.name}
                         </span>
                     </DialogDescription>
+                    {group._id}
                 </DialogHeader>
                 <div className="max-h-[350px] overflow-y-auto">
                     {group.members.map((member) => (

@@ -26,7 +26,7 @@ const messageSchema = new Schema<IMessage>(
     { timestamps: true },
 )
 
-messageSchema.index({ sendToId: 1, createdAt: -1 })
+messageSchema.index({ receiverId: 1, createdAt: -1 })
 
-const ChatMessage = model<IMessage>("ChatMessage", messageSchema)
+const ChatMessage = model<IMessage>("Message", messageSchema)
 export default ChatMessage

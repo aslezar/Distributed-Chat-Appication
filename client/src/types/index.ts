@@ -54,9 +54,9 @@ export interface FullMessageType extends MessageType {
     sender: MyContactsType | undefined
 }
 
-export interface MessageResponse {
-    receiverId: string
-    message: MessageType[]
+export interface MessageResponse extends MessageType {
+    updatedAt: string
+    __v: number
 }
 
 export interface ContactType {
