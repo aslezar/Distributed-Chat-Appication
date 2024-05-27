@@ -140,12 +140,15 @@ export default (io: SocketIOServer | null, socket: Socket) => {
 
         if (isMyContact) {
             socket.to(receiverId).emit("message:new", dataMessage)
-            socket.to(userId.toString()).emit("message:new", dataMessage)
         } else {
             io.to(receiverId).emit("message:new", dataMessage)
         }
 
-        cb({ success: true, msg: "Message sent successfully" })
+        cb({
+            success: true,
+            msg: "Message sent successfully",
+            message: dataMessage,
+        })
     }
     const getSender = async (data: any, cb: any) => {
         const { senderId } = data

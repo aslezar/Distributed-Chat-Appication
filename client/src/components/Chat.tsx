@@ -174,7 +174,7 @@ function InputMessage({ chatSelected }: { chatSelected: string }) {
             //focus at the end of the emoji
             inputRef.current.selectionStart = start + emoji.length
             inputRef.current.selectionEnd = start + emoji.length
-            inputRef.current.focus()
+            // inputRef.current.focus()
         }
     }
 
@@ -182,12 +182,14 @@ function InputMessage({ chatSelected }: { chatSelected: string }) {
 
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        e.stopPropagation()
 
         const msg = e.currentTarget.message.value
         if (!msg) return
 
         sendMessage(chatSelected, msg)
         e.currentTarget.message.value = ""
+        inputRef.current?.focus()
     }
 
     return (

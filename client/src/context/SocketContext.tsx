@@ -143,10 +143,17 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
                     message,
                     receiverId,
                 },
-                (data: { success: boolean; msg: string }) => {
+                (data: {
+                    success: boolean
+                    msg: string
+                    message: NewMessage
+                }) => {
                     console.log(data)
                     if (!data.success) toast.error(data.msg)
-                    else if (import.meta.env.DEV) toast.success("Message sent")
+                    else {
+                        if (import.meta.env.DEV) toast.success("Message sent")
+                        saveMessage(data.message)
+                    }
                 },
             ) ?? toast.error("You are not connected to the server")
         },
@@ -380,7 +387,6 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         socketConnection.connect()
 
         return () => {
-            socketConnection.close()
             socketConnection.disconnect()
             setMyContacts([])
             setMyGroups([])
