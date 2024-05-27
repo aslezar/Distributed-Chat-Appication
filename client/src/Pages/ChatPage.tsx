@@ -64,7 +64,7 @@ const callsProfile = [
 
 function CallProfile({ profile }: { profile: (typeof callsProfile)[0] }) {
     return (
-        <div className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700">
+        <div className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
             <Avatar>
                 <AvatarImage alt="John Doe" src={profile.profileImage} />
                 <AvatarFallback>
@@ -117,7 +117,7 @@ function ChatProfile({ contact }: { contact: ContactType }) {
 
     return (
         <NavLink
-            className="flex items-center gap-3 rounded-md bg-gray-100 p-3 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+            className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-200  dark:hover:bg-gray-700"
             to={`/chat/${contact._id}`}
         >
             <Avatar>
@@ -152,8 +152,14 @@ export default function ChatPage() {
     const { chatId: chatSelected } = useParams()
     const { allContactsAndGroups } = useSocketContext()
 
+    const contact = allContactsAndGroups.sort(
+        (a, b) =>
+            new Date(b.lastMessage?.createdAt || b.createdAt).getTime() -
+            new Date(a.lastMessage?.createdAt || a.createdAt).getTime(),
+    )
+
     return (
-        <div className="grid h-screen w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
+        <div className="grid h-dvh w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
             <div
                 className={`border-r border-gray-200 dark:border-gray-800 ${chatSelected === undefined ? "block" : "hidden sm:block"}`}
             >
@@ -194,8 +200,8 @@ export default function ChatPage() {
                         className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
                         value="chat"
                     >
-                        <div className="grid gap-2 p-4">
-                            {allContactsAndGroups.map((contact) => (
+                        <div className="grid gap-2 p-2">
+                            {contact.map((contact) => (
                                 <ChatProfile
                                     key={contact._id}
                                     contact={contact}
@@ -207,7 +213,7 @@ export default function ChatPage() {
                         className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
                         value="calls"
                     >
-                        <div className="grid gap-2 p-4">
+                        <div className="grid gap-2 p-2">
                             {callsProfile.map((profile) => (
                                 <CallProfile
                                     key={profile._id}
@@ -219,7 +225,7 @@ export default function ChatPage() {
                 </Tabs>
             </div>
             <div
-                className={`flex-col max-h-full ${chatSelected === undefined ? "hidden sm:flex" : "flex"}`}
+                className={`flex-col h-dvh relative ${chatSelected === undefined ? "hidden sm:flex" : "flex"}`}
             >
                 <Chat />
             </div>

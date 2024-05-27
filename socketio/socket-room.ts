@@ -2,6 +2,7 @@ import { Server as SocketIOServer, Socket } from "socket.io"
 import { Types } from "mongoose"
 import { User, Group, Message } from "../models"
 import { Roles, Modal } from "../roles"
+import { Member } from "../types/models"
 
 const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
     socket.join(userId.toString())
@@ -24,37 +25,46 @@ const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
     const myContactsIds =
         contacts?.myContacts.map((contact: any) => contact._id) ?? []
 
-    const userMessages = await Message.find({
-        $or: [
-            {
-                senderId: userId,
-                receiverId: { $in: myContactsIds },
+    const userMessages = await Message.aggregate([
+        {
+            $match: {
+                $or: [
+                    { senderId: userId, modal: Modal.USER },
+                    { receiverId: userId, modal: Modal.USER },
+                    { receiverId: { $in: myGroupsIds }, modal: Modal.GROUP },
+                ],
             },
-            {
-                senderId: { $in: myContactsIds },
-                receiverId: userId,
+        },
+        {
+            $sort: { createdAt: -1 }, // Sort by createdAt in descending order
+        },
+        {
+            $group: {
+                _id: "$receiverId", // Group by receiverId
+                messages: { $push: "$$ROOT" }, // Push the entire document into the messages array
             },
-            {
-                senderId: userId,
-                receiverId: { $in: myGroupsIds },
-            },
-            {
-                senderId: { $in: myGroupsIds },
-                receiverId: userId,
-            },
-        ],
-    })
-        .sort({ createdAt: -1 })
-        .limit(10)
-        .populate({
-            path: "senderId receiverId",
-            select: "name phoneNo image createdAt",
-        })
+        },
+        // {
+        //     $project: {
+        //         messages: { $slice: ["$messages", 10] }, // Select the top 10 messages from each group
+        //     },
+        // },
+    ])
+
+    // console.log(userMessages)
 
     const messages = userMessages.map((message) => {
         return {
-            ...message.toJSON(),
-            isGroup: message.modal === "Group",
+            receiverId: message._id,
+            message: message.messages.map((msg: any) => {
+                const isGroup = myGroupsIds.some(
+                    (group) => group.toString() === msg.receiverId.toString(),
+                )
+                return {
+                    ...msg,
+                    isGroup: msg.modal === Modal.GROUP,
+                }
+            }),
         }
     })
 
@@ -108,7 +118,7 @@ export default (io: SocketIOServer | null, socket: Socket) => {
             select: "name phoneNo image createdAt",
         })
 
-        socket.to(receiverId).emit("message:new", {
+        const dataMessage = {
             ...newMessage.toJSON(),
             isGroup: isMyGroup,
             sender: newMessage.senderId,
@@ -117,10 +127,17 @@ export default (io: SocketIOServer | null, socket: Socket) => {
             senderId: newMessage.senderId._id,
             //@ts-ignore
             receiverId: newMessage.receiverId._id,
-        })
+        }
+
+        if (isMyContact) {
+            socket.to(receiverId).emit("message:new", dataMessage)
+            socket.to(userId.toString()).emit("message:new", dataMessage)
+        } else {
+            io.to(receiverId).emit("message:new", dataMessage)
+        }
+
         cb({ success: true, msg: "Message sent successfully" })
     }
-
     const getSender = async (data: any, cb: any) => {
         const { senderId } = data
         if (!senderId) {
@@ -146,10 +163,117 @@ export default (io: SocketIOServer | null, socket: Socket) => {
         )
         cb({ success: true, sender })
     }
+    const newGroup = async (data: any, cb: any) => {
+        const { name, members } = data
+
+        if (!name || !members) {
+            return cb({
+                success: false,
+                msg: "Please provide name and members",
+            })
+        }
+        const groupMembers = new Map<string, Member>()
+
+        members.forEach((member: any) => {
+            groupMembers.set(member, {
+                user: member,
+                role: Roles.MEMBER,
+            })
+        })
+
+        groupMembers.set(userId.toString(), {
+            user: userId as any,
+            role: Roles.ADMIN,
+        })
+
+        const newGroup = await Group.create({
+            name,
+            members: Array.from(groupMembers.values()),
+        })
+        const group = await newGroup.populate({
+            path: "members.user",
+            select: "name phoneNo image createdAt",
+        })
+
+        const groupMembersIds = group.members.map((member: any) =>
+            member.user._id.toString(),
+        )
+
+        socket.myGroups.push(newGroup._id)
+        io.sockets.sockets.forEach((s) => {
+            if (groupMembersIds.includes(s.user.userId.toString())) {
+                s.myGroups.push(newGroup._id)
+                s.join(newGroup._id.toString())
+                s.emit("new:group", group)
+            }
+        })
+
+        cb({
+            success: true,
+            msg: "Group created successfully",
+            group,
+        })
+    }
+    const newContact = async (data: any, cb: any) => {
+        const { contactId } = data
+        console.log(data)
+
+        if (!contactId) {
+            return cb({
+                success: false,
+                msg: "Please provide contactId",
+            })
+        }
+
+        const isMyContact = socket.myContacts.some(
+            (contact) => contact.toString() === contactId,
+        )
+        if (isMyContact) {
+            return cb({
+                success: false,
+                msg: "Contact already added",
+            })
+        }
+
+        const contact = await User.findByIdAndUpdate(
+            contactId,
+            {
+                $push: { myContacts: userId },
+            },
+            {
+                new: true,
+            },
+        ).select("name phoneNo image createdAt")
+        if (!contact) {
+            return cb({
+                success: false,
+                msg: "Contact not found",
+            })
+        }
+        const user = await User.findByIdAndUpdate(userId, {
+            $push: { myContacts: contactId },
+        }).select("name phoneNo image createdAt")
+
+        io.sockets.sockets.forEach((s) => {
+            if (s.user.userId.toString() === contactId) {
+                s.myContacts.push(userId)
+                s.emit("new:contact", user)
+            }
+        })
+        socket.myContacts.push(contactId)
+        cb({
+            success: true,
+            msg: "Contact added successfully",
+            contact,
+        })
+    }
+
     initializeSocket(socket, userId)
         .then(() => {
             socket.on("message:send", sendMessage)
             socket.on("get:sender", getSender)
+            socket.on("create:group", newGroup)
+            socket.on("create:contact", newContact)
         })
         .catch((error) => {
             console.log(error)

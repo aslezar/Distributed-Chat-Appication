@@ -99,12 +99,12 @@ function CreateGroup({
 
     const handleCreateGroup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setCreatingGroup(true)
         const groupName = e.currentTarget.groupName.value
         if (!groupName) return
 
         const members = selectedMembers.map((member) => member._id)
 
+        setCreatingGroup(true)
         createGroup(groupName, members)
             .then((groupId) => {
                 toast.success("Group Created")
@@ -193,8 +193,22 @@ function CreateGroup({
 function NewChat({ closeDialog }: { closeDialog: (open: boolean) => void }) {
     const [search, setSearch] = useState("")
     const [results, setResults] = useState<MyContactsType[]>([])
+    const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
+
+    const { createNewChat } = useSocketContext()
+
+    const handleNewChat = (userId: string) => {
+        setLoading(true)
+        createNewChat(userId)
+            .then(() => {
+                closeDialog(false)
+                navigate(`/chat/${userId}`)
+            })
+            .catch((error) => console.error(error.response))
+            .finally(() => setLoading(false))
+    }
 
     return (
         <SearchUser
@@ -241,10 +255,8 @@ function NewChat({ closeDialog }: { closeDialog: (open: boolean) => void }) {
                             <div className="flex items-center gap-2">
                                 <Button
                                     variant="secondary"
-                                    onClick={() => {
-                                        closeDialog(false)
-                                        navigate(`/chat/${member._id}`)
-                                    }}
+                                    onClick={() => handleNewChat(member._id)}
+                                    disabled={loading}
                                 >
                                     Message
                                 </Button>

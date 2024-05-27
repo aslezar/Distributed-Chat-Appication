@@ -32,13 +32,15 @@ export interface IMessage extends Document {
     updatedAt: Date
 }
 
+export interface Member {
+    user: Schema.Types.ObjectId
+    role: string
+}
+
 export interface IGroup extends Document {
     name: string
     image: string
-    members: Types.Array<{
-        user: Schema.Types.ObjectId
-        role: string
-    }>
+    members: Types.Array<Member>
     createdAt: Date
     updatedAt: Date
 }

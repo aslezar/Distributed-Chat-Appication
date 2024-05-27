@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react"
 import EmojiPicker from "../components/EmojiPicker"
 import ChatInfo from "./ChatInfo"
 import { useSocketContext } from "@/context/SocketContext"
-import { ContactType, MessageType } from "@/types"
+import { MessageType, MyContactsType } from "@/types"
 import { useAppSelector } from "@/hooks"
 import moment from "moment"
 import { useNavigate, useParams } from "react-router-dom"
@@ -47,7 +47,7 @@ function ChatProfileBar({ chatSelected }: { chatSelected: string }) {
     if (!contact) return <HeaderSkeletonLoader />
 
     return (
-        <div className="flex h-[60px] items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800">
+        <div className="flex h-[60px] items-center justify-between border-b border-gray-200 px-4 dark:border-gray-800 w-full">
             <div className="flex items-center gap-3">
                 <Button
                     size="icon"
@@ -89,31 +89,26 @@ function Messages({ chatSelected }: { chatSelected: string }) {
     const { user } = useAppSelector((state) => state.user)
     const myUserId = user._id
 
-    const { getMessages, getContact } = useSocketContext()
+    const { getMessages } = useSocketContext()
 
     const messages = getMessages(chatSelected)
 
-    const messageWithSender = messages?.map((message) => ({
-        ...message,
-        sender: getContact(message.senderId),
-    }))
+    // console.log(chatSelected);
+    // console.log(messages)
 
     return (
-        <div className="max-h-[calc(100vh-120px)] flex-1 overflow-y-scroll p-4">
-            <div className="grid gap-4">
-                {messageWithSender &&
-                    messageWithSender.map((message) =>
-                        message.senderId === myUserId ? (
-                            <MyMessage key={message._id} message={message} />
-                        ) : (
-                            <OtherMessage
-                                key={message._id}
-                                message={message}
-                                sender={message.sender}
-                            />
-                        ),
-                    )}
-            </div>
+        <div className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col-reverse gap-4">
+            {messages.map((message) =>
+                message.senderId === myUserId ? (
+                    <MyMessage key={message._id} message={message} />
+                ) : (
+                    <OtherMessage
+                        key={message._id}
+                        message={message}
+                        sender={message.sender}
+                    />
+                ),
+            )}
         </div>
     )
 }
@@ -123,7 +118,7 @@ function OtherMessage({
     sender,
 }: {
     message: MessageType
-    sender: ContactType | undefined
+    sender: MyContactsType | undefined
 }) {
     return (
         <div className="flex items-end gap-3">

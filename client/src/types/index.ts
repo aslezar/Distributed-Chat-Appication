@@ -50,6 +50,14 @@ export interface MessageType {
     isGroup: boolean
     createdAt: string
 }
+export interface FullMessageType extends MessageType {
+    sender: MyContactsType | undefined
+}
+
+export interface MessageResponse {
+    receiverId: string
+    message: MessageType[]
+}
 
 export interface ContactType {
     _id: string

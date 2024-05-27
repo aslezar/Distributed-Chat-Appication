@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose"
 import { IGroup } from "../types/models"
-import {Roles} from "../roles"
+import { Roles } from "../roles"
 
 const GroupSchema = new Schema<IGroup>(
     {

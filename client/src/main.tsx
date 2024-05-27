@@ -15,6 +15,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 <App />
             </ThemeProvider>
         </Provider>
-        <Toaster />
+        <Toaster
+            position="bottom-right"
+            reverseOrder={false}
+            containerClassName="mb-[75px]"
+        />
     </React.StrictMode>,
 )

@@ -163,6 +163,11 @@ export default function ViewProfileButton() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {user.phoneNo}
                         </p>
+                        {import.meta.env.DEV && (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {user._id}
+                            </p>
+                        )}
                     </div>
                 </div>
 
