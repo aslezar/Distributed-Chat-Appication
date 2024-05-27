@@ -120,8 +120,18 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         setMessages((messageMap) => {
             console.log(messageMap)
 
-            messageMap.get(message.receiverId)?.push(message) ??
-                messageMap.set(message.receiverId, [message])
+            if (message.isGroup) {
+                messageMap.get(message.receiverId)?.push(message) ??
+                    messageMap.set(message.receiverId, [message])
+            } else {
+                const contactId =
+                    message.senderId === user._id
+                        ? message.receiverId
+                        : message.senderId
+                messageMap.get(contactId)?.push(message) ??
+                    messageMap.set(contactId, [message])
+            }
+
             return new Map(messageMap)
         })
     }, [])
