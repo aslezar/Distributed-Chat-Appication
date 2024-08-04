@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from "socket.io"
 import { Types } from "mongoose"
 import { User, Group, Message } from "../models"
-import { Roles, Modal } from "../roles"
+import { ROLES, MODAL } from "../roles"
 import { Member } from "../types/models"
 
 const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
@@ -30,14 +30,14 @@ const initializeSocket = async (socket: Socket, userId: Types.ObjectId) => {
             $match: {
                 $or: [
                     { senderId: userId },
-                    { receiverId: userId, modal: Modal.USER },
-                    { receiverId: { $in: myGroupsIds }, modal: Modal.GROUP },
+                    { receiverId: userId, modal: MODAL.USER },
+                    { receiverId: { $in: myGroupsIds }, modal: MODAL.GROUP },
                 ],
             },
         },
         {
             $addFields: {
-                isGroup: { $eq: ["$modal", Modal.GROUP] },
+                isGroup: { $eq: ["$modal", MODAL.GROUP] },
             },
         },
         {
@@ -119,7 +119,7 @@ export default (io: SocketIOServer | null, socket: Socket) => {
             message,
             senderId: userId,
             receiverId,
-            modal: isMyGroup ? Modal.GROUP : Modal.USER,
+            modal: isMyGroup ? MODAL.GROUP : MODAL.USER,
         })
 
         await newMessage.populate({
@@ -189,13 +189,13 @@ export default (io: SocketIOServer | null, socket: Socket) => {
         members.forEach((member: any) => {
             groupMembers.set(member, {
                 user: member,
-                role: Roles.MEMBER,
+                role: ROLES.MEMBER,
             })
         })
 
         groupMembers.set(userId.toString(), {
             user: userId as any,
-            role: Roles.ADMIN,
+            role: ROLES.ADMIN,
         })
 
         const newGroup = await Group.create({

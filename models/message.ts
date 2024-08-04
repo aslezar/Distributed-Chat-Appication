@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose"
 import { IMessage as IMessage } from "../types/models"
-import { Modal } from "../roles"
+import { MODAL } from "../roles"
 const messageSchema = new Schema<IMessage>(
     {
         senderId: {
@@ -16,7 +16,7 @@ const messageSchema = new Schema<IMessage>(
         modal: {
             type: String,
             required: [true, "Please Provide Modal."],
-            enum: Array.from(Object.values(Modal)),
+            enum: Array.from(Object.values(MODAL)),
         },
         message: {
             type: String,

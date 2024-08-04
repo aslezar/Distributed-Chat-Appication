@@ -37,7 +37,7 @@ export default function Component() {
     return (
         <main className="flex-1">
             <section
-                className="w-full pt-12 md:pt-24 lg:pt-32 border-y"
+                className="w-full py-12 md:py-24 lg:pt-32 border-y"
                 id="home"
             >
                 <div className="px-4 md:px-6 space-y-10 xl:space-y-16">
@@ -158,17 +158,17 @@ export default function Component() {
                 className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800"
                 id="contact"
             >
-                <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
-                    <div className="space-y-3">
-                        <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">
+                <div className="container grid items-center justify-center gap-6 px-4 text-center md:px-6">
+                    <div className="space-y-4">
+                        <h2 className="text-4xl font-bold tracking-tighter md:text-5xl lg:text-6xl">
                             Contact Us
                         </h2>
-                        <p className="mx-auto max-w-[600px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
+                        <p className="mx-auto max-w-[700px] text-lg md:text-xl lg:text-2xl text-gray-500 dark:text-gray-400">
                             Have a question or feedback? Fill out the form below
                             and we'll get back to you.
                         </p>
                     </div>
-                    <div className="mx-auto w-full max-w-sm space-y-4">
+                    <div className="mx-auto w-full max-w-md space-y-4">
                         <form
                             className="grid gap-4"
                             onSubmit={handleContactSubmit}
@@ -180,6 +180,7 @@ export default function Component() {
                                     disabled={loading}
                                     required
                                     placeholder="Enter your name"
+                                    className="text-base md:text-lg"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -190,6 +191,7 @@ export default function Component() {
                                     required
                                     placeholder="Enter your email"
                                     type="email"
+                                    className="text-base md:text-lg"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -198,11 +200,15 @@ export default function Component() {
                                     name="message"
                                     disabled={loading}
                                     required
-                                    className="min-h-[100px]"
+                                    className="min-h-[120px] text-base md:text-lg"
                                     placeholder="Enter your message"
                                 />
                             </div>
-                            <Button type="submit" disabled={loading}>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="text-base md:text-lg py-2 md:py-3"
+                            >
                                 {loading ? "Sending..." : "Send"}
                             </Button>
                         </form>

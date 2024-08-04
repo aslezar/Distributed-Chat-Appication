@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose"
 import { IGroup } from "../types/models"
-import { Roles } from "../roles"
+import { ROLES } from "../roles"
 
 const GroupSchema = new Schema<IGroup>(
     {
@@ -22,8 +22,8 @@ const GroupSchema = new Schema<IGroup>(
                 },
                 role: {
                     type: String,
-                    enum: Array.from(Object.values(Roles)),
-                    default: Roles.MEMBER,
+                    enum: Array.from(Object.values(ROLES)),
+                    default: ROLES.MEMBER,
                 },
             },
         ],
