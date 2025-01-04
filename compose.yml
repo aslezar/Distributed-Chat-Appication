@@ -1,0 +1,36 @@
+services:
+    server:
+        restart: always
+        build:
+            context: ./
+            target: backend-dev
+        volumes:
+            - ./:/usr/local/app
+        depends_on:
+            - mongo
+            - rabbitmq
+        environment:
+            PORT: 8000
+            MONGO_URL: mongodb://mongo:27017/vibetalk
+            SERVER_SELECTION_TIMEOUT_MS: 5000
+        ports:
+            - "8000:8000"
+
+    mongo:
+        image: mongo:7.0-jammy
+        command: --logpath /dev/null
+        restart: always
+        volumes:
+            - vibetalk-data:/data/db
+        ports:
+            - 27017:27017
+
+    rabbitmq:
+        image: rabbitmq:4.0-management-alpine
+        logging:
+            driver: "none"
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+volumes:
+  vibetalk-data:
