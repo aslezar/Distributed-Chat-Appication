@@ -1,5 +1,5 @@
 import { Schema, Types, Model } from "mongoose"
-
+import { RolesEnum, MessageStatusEnum } from "../../enums"
 export interface OTP {
     value: string
     expires: Date
@@ -22,24 +22,29 @@ export interface IUser extends Document {
     comparePassword: (password: string) => Promise<boolean>
 }
 
+export interface ReadReceipt {
+    userId: Schema.Types.ObjectId
+    status: MessageStatusEnum
+    time: Date
+}
 export interface IMessage extends Document {
     _id: Schema.Types.ObjectId
+    channelId: Schema.Types.ObjectId
+    bucket: number
     senderId: Schema.Types.ObjectId
-    receiverId: Schema.Types.ObjectId
-    modal: string
     message: string
+    readReceipt: Types.Array<ReadReceipt>
     createdAt: Date
     updatedAt: Date
 }
 
 export interface Member {
-    user: Schema.Types.ObjectId
-    role: string
+    userId: Schema.Types.ObjectId
+    role: RolesEnum
 }
 
-export interface IGroup extends Document {
-    name: string
-    image: string
+export interface IChannel extends Document {
+    isGroup: boolean
     members: Types.Array<Member>
     createdAt: Date
     updatedAt: Date

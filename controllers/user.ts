@@ -8,7 +8,6 @@ import {
     deleteProfileImage as cloudinaryDeleteProfileImage,
 } from "../utils/imageHandlers/cloudinary"
 import setAuthTokenCookie from "../utils/setCookie/setAuthToken"
-import { create } from "domain"
 
 const getMe = async (req: Request, res: Response) => {
     const user = await User.findById(req.user.userId).select(
@@ -124,7 +123,7 @@ const getGroup = async (req: Request, res: Response) => {
     return res.status(StatusCodes.OK).json({
         data: group,
         success: true,
-        msg: `Group ${group.name} Fetched Successfully`,
+        // msg: `Group ${group.name} Fetched Successfully`,
     })
 }
 

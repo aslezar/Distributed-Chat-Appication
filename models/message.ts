@@ -1,32 +1,36 @@
 import { Schema, model } from "mongoose"
 import { IMessage as IMessage } from "../types/models"
-import { MODAL } from "../roles"
+import { MessageStatusEnum } from "../enums"
 const messageSchema = new Schema<IMessage>(
     {
+        channelId: {
+            type: Schema.Types.ObjectId,
+            ref: "Channel",
+            required: [true, "Please Provide Channel Id."],
+        },
+        bucket: {
+            type: Number,
+            required: [true, "Please Provide Bucket."],
+        },
         senderId: {
             type: Schema.Types.ObjectId,
             required: [true, "Please Provide User Id."],
             ref: "User",
         },
-        receiverId: {
-            type: Schema.Types.ObjectId,
-            required: [true, "Please Provide Send To."],
-            refPath: "modal",
-        },
-        modal: {
-            type: String,
-            required: [true, "Please Provide Modal."],
-            enum: Array.from(Object.values(MODAL)),
-        },
         message: {
             type: String,
             required: [true, "Please Provide Message."],
         },
+        readReceipt: [{
+            userId: Schema.Types.ObjectId,
+            status: { type: String, enum: MessageStatusEnum },
+            time: Date,
+        }],
     },
     { timestamps: true },
 )
 
-messageSchema.index({ receiverId: 1, createdAt: -1 })
+messageSchema.index({ channelId: 1, bucket: 1 })
 
 const ChatMessage = model<IMessage>("Message", messageSchema)
 export default ChatMessage

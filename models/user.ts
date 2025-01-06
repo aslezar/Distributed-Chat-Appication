@@ -34,12 +34,6 @@ const UserSchema = new Schema<IUser>(
             default:
                 "https://res.cloudinary.com/dzvci8arz/image/upload/v1715358550/iaxzl2ivrkqklfvyasy1.jpg",
         },
-        myContacts: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-            },
-        ],
         // For Authentication
         status: {
             type: String,
