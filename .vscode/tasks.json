@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Dev Backend",
+            "type": "shell",
+            "command": "bash -c 'read -p \"Press y to start backend or any other key to cancel: \" choice && if [[ $choice == \"y\" ]]; then docker compose up -d && docker attach vibetalk-server-1; else echo \"Cancelled\"; fi'",
+            "group": "build",
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "icon": {
+                "id": "play",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "Stop Dev Backend",
+            "type": "shell",
+            "command": "cd backend && docker compose down",
+            "group": "none",
+            "icon": {
+                "id": "stop",
+                "color": "terminal.ansiRed"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Format Backend",
+            "type": "npm",
+            "script": "format",
+            "group": "test",
+            "path": "backend",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "icon": {
+                "id": "pencil",
+                "color": "terminal.ansiYellow"
+            }
+        },
+        {
+            "label": "Build Backend",
+            "type": "npm",
+            "script": "build",
+            "group": "test",
+            "path": "backend",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "icon": {
+                "id": "package",
+                "color": "terminal.ansiCyan"
+            }
+        },
+        {
+            "label": "Test Build and format Backend",
+            "dependsOn": [
+                "Format Backend",
+                "Build Backend"
+            ],
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "check",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "Format Frontend",
+            "type": "npm",
+            "script": "format:write",
+            "group": "test",
+            "path": "frontend",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "icon": {
+                "id": "pencil",
+                "color": "terminal.ansiYellow"
+            }
+        },
+        {
+            "label": "Build Frontend",
+            "type": "npm",
+            "script": "build",
+            "group": "test",
+            "path": "frontend",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "icon": {
+                "id": "package",
+                "color": "terminal.ansiCyan"
+            }
+        },
+        {
+            "label": "Test Build and format Frontend",
+            "dependsOn": [
+                "Format Frontend",
+                "Build Frontend"
+            ],
+            "dependsOrder": "sequence",
+            "icon": {
+                "id": "check",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "Test Build and format",
+            "dependsOn": [
+                "Test Build and format Backend",
+                "Test Build and format Frontend"
+            ],
+            "problemMatcher": [],
+            "icon": {
+                "id": "check-all",
+                "color": "terminal.ansiMagenta"
+            }
+        }
+    ]
+}
