@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { useEffect, useState } from "react"
 import { search as searchApi } from "../api"
-import { MyContactsType } from "@/types"
+import { MyContactType } from "@/types"
 import { useAppSelector } from "@/hooks"
 import { useSocketContext } from "@/context/SocketContext"
 import toast from "react-hot-toast"
@@ -67,8 +67,8 @@ function CreateGroup({
 }) {
     const [search, setSearch] = useState("")
     const [creatingGroup, setCreatingGroup] = useState(false)
-    const [results, setResults] = useState<MyContactsType[]>([])
-    const [selectedMembers, setSelectedMembers] = useState<MyContactsType[]>([])
+    const [results, setResults] = useState<MyContactType[]>([])
+    const [selectedMembers, setSelectedMembers] = useState<MyContactType[]>([])
 
     const { user } = useAppSelector((state) => state.user)
     const { createGroup, contacts } = useSocketContext()
@@ -84,7 +84,7 @@ function CreateGroup({
     const isSelected = (id: string) =>
         selectedMembers.some((member) => member._id === id)
 
-    const toggleSelection = (toggleUser: MyContactsType) => {
+    const toggleSelection = (toggleUser: MyContactType) => {
         if (toggleUser._id === user._id) return
         if (isSelected(toggleUser._id)) {
             setSelectedMembers(
@@ -192,7 +192,7 @@ function CreateGroup({
 
 function NewChat({ closeDialog }: { closeDialog: (open: boolean) => void }) {
     const [search, setSearch] = useState("")
-    const [results, setResults] = useState<MyContactsType[]>([])
+    const [results, setResults] = useState<MyContactType[]>([])
     const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
@@ -277,7 +277,7 @@ function SearchUser({
 }: {
     search: string
     setSearch: (search: string) => void
-    setResults: (results: MyContactsType[]) => void
+    setResults: (results: MyContactType[]) => void
     children: React.ReactNode
 }) {
     const [timeoutId, setTimeoutId] = useState<ReturnType<
@@ -316,7 +316,7 @@ function Member({
     isSelected,
     toggleSelection,
 }: {
-    member: MyContactsType
+    member: MyContactType
     isSelected: boolean
     toggleSelection: () => void
 }) {

@@ -1,34 +1,26 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog"
-import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { MyChannelsType } from "@/types"
 import { Info } from "lucide-react"
-import { useAppSelector } from "@/hooks"
 import moment from "moment"
-import { useSocketContext } from "@/context/SocketContext"
-import { useParams } from "react-router-dom"
 
-export default function ChatInfo({}: {}) {
-    const { user } = useAppSelector((state) => state.user)
-    const { getGroup } = useSocketContext()
-    const { chatId } = useParams()
-
-    if (!chatId) return null
-
-    const myUserId = user._id
-    const group = getGroup(chatId)
-
-    //if group is not found, return null
-    if (!group) return null
-
-    const admin = group.members.find((member) => member.role === "admin")
+export default function ChatInfo({
+    channel,
+    myUserId,
+}: {
+    channel: MyChannelsType
+    myUserId: string
+}) {
+    if (!channel.isGroup) return null
 
     return (
         <Dialog>
@@ -38,49 +30,40 @@ export default function ChatInfo({}: {}) {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{group.name}</DialogTitle>
+                    <DialogTitle>{channel.name}</DialogTitle>
                     <DialogDescription>
                         Created on{" "}
-                        {moment(group.createdAt).format("D MMMM YY, kk:mm") +
-                            " by "}
-                        <span className="font-semibold">
-                            {admin?.user.name}
-                        </span>
+                        {moment(channel.createdAt).format("D MMMM YY, kk:mm")}
                     </DialogDescription>
-                    {group._id}
+                    {channel._id}
                 </DialogHeader>
                 <div className="max-h-[350px] overflow-y-auto">
-                    {group.members.map((member) => (
+                    {channel.members.map(({ role, userId: user }) => (
                         <div
-                            key={member.user._id}
+                            key={user._id}
                             className="flex items-center gap-3 py-2 px-5"
                         >
                             <Avatar>
-                                <AvatarImage
-                                    alt={member.user.name}
-                                    src={member.user.image}
-                                />
-                                <AvatarFallback>
-                                    {member.user.name[0]}
-                                </AvatarFallback>
+                                <AvatarImage alt={user.name} src={user.image} />
+                                <AvatarFallback>{user.name[0]}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p>{member.user.name}</p>
+                                <p>{user.name}</p>
                                 <p className="text-gray-500 dark:text-gray-400 text-sm">
-                                    {member.user.phoneNo}
+                                    {user.phoneNo}
                                 </p>
                             </div>
                             <p className="text-gray-500 dark:text-gray-400 flex-1 text-right">
-                                {member.user._id === admin?.user._id
-                                    ? "Admin"
-                                    : "Member"}
+                                {role === "admin" ? "Admin" : "Member"}
                             </p>
                         </div>
                     ))}
                 </div>
                 <DialogFooter>
-                    {myUserId === admin?.user._id && (
-                        <Button variant="outline">Add Member</Button>
+                    {channel.members.some((m) => m.userId._id === myUserId) && (
+                        <Button variant="outline" disabled>
+                            Add Member
+                        </Button>
                     )}
                     <Button variant="outline">Leave Group</Button>
                 </DialogFooter>

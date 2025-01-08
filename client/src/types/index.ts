@@ -23,52 +23,63 @@ export interface UserType {
     createdAt: string
 }
 
-export interface MyGroupsType {
+enum RolesEnum {
+    ADMIN = "admin",
+    MEMBER = "member",
+}
+
+export interface MyChannelsType {
     _id: string
     name: string
-    image: string
+    groupImage: string
     members: Array<{
-        user: MyContactsType
-        role: string
+        _id: string
+        userId: MyContactType
+        role: RolesEnum
     }>
+    isGroup: boolean
     createdAt: string
 }
 
-export interface MyContactsType {
+export interface MyContactType {
     _id: string
     name: string
+    email: string
     phoneNo: string
     image: string
-    createdAt: string
+}
+
+export enum MessageStatusEnum {
+    Delivered = "delivered",
+    Read = "read",
 }
 
 export interface MessageType {
     _id: string
-    message: string
+    channelId: string
+    bucket: number
     senderId: string
-    receiverId: string
-    isGroup: boolean
+    message: string
+    readReceipt: Array<{
+        userId: string
+        status: MessageStatusEnum
+        time: Date
+    }>
     createdAt: string
 }
-export interface FullMessageType extends MessageType {
-    sender: MyContactsType | undefined
+
+
+export enum CallType {
+    Missed = "Missed call",
+    Incoming = "Incoming call",
+    Outgoing = "Outgoing call",
 }
 
-export interface MessageResponse extends MessageType {
-    updatedAt: string
-    __v: number
-}
-
-export interface ContactType {
+export interface CallsProfileType {
     _id: string
     name: string
-    image: string
-    isGroup: boolean
-    lastMessage: MessageType | undefined
-    createdAt: string
-}
-
-export interface NewMessage extends MessageType {
-    sender: MyContactsType
-    receiver: MyContactsType
+    type: CallType
+    time: string
+    profileImage: string
+    isVideoCall: boolean
 }

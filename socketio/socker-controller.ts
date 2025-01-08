@@ -1,29 +1,11 @@
-import { IsMongoId, IsNotEmpty, IsString, validate } from "class-validator";
+import { IsEnum, IsMongoId, IsNotEmpty, IsString, validate } from "class-validator";
 import { Socket, Server as SocketIOServer } from "socket.io";
 import { Channel, Message } from "../models";
 import { RabbitMQ } from "../rabbitmq";
 import { Type } from "./type.interface";
+import { EventsEnum, RolesEnum } from "../enums";
 
-function Logger(target: Function) {
-    console.log(`Class ${target.name} is being decorated`);
-}
-
-@Logger
-class Payload {
-    @IsMongoId()
-    @IsNotEmpty()
-    channelId!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    message!: string;
-}
-
-const bucketValue = 500
-
-function getBucket() {
-    return bucketValue
-}
+const serverName = process.env.SERVER_NAME as string
 
 function validation<T>(payload: any, classRef: Type<T>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -38,14 +20,54 @@ function validation<T>(payload: any, classRef: Type<T>): Promise<T> {
     });
 }
 
+class NewMessage {
+    @IsMongoId()
+    @IsNotEmpty()
+    channelId!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    message!: string;
+}
+
+export class Member {
+    @IsMongoId()
+    @IsNotEmpty()
+    userId!: string
+
+    @IsNotEmpty()
+    @IsEnum(RolesEnum)
+    role!: RolesEnum;
+}
+
+class NewGroup {
+    @IsString()
+    @IsNotEmpty()
+    name!: string;
+
+    @IsNotEmpty()
+    members!: Member[];
+}
+
+class NewChat {
+    @IsNotEmpty()
+    member!: Member;
+}
+
+const bucketValue = 500
+
+function getBucket() {
+    return bucketValue
+}
+
 export function sendMessage(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
     return async (data: any, callback: any) => {
-        if (typeof callback !== "function" || rabbitMq === null) {
+        if (typeof callback !== "function") {
             return;
         }
         try {
 
-            const payload = await validation(data, Payload)
+            const payload = await validation(data, NewMessage)
 
             const channel = await Channel.findById(payload.channelId);
             // check if part of the channel
@@ -60,35 +82,131 @@ export function sendMessage(io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
                 message: payload.message,
             })
 
-            const jsonMessage = Buffer.from(JSON.stringify(message.toJSON()));
+            // const jsonEvent = Buffer.from(JSON.stringify(message.toJSON()));
+            const jsonEvent = Buffer.from(JSON.stringify({ event: EventsEnum.NewMessage, data: message.toJSON() }));
             console.log("Sending message");
 
             const promises: Promise<any>[] = [];
             promises.push(message.save());
             for (const member of channel.members) {
-                rabbitMq.messageChannel.publish("messages", member.userId.toString(), jsonMessage);
+                rabbitMq.messageChannel.publish("messages", member.userId.toString(), jsonEvent);
             }
             await Promise.all(promises);
-            callback({ success: true, message: message.toJSON() });
+            callback({ success: true, data: message.toJSON() });
         } catch (error) {
+            console.log(error);
             callback({ success: false, errors: error });
-
         }
     }
 }
 
-export function getMessages(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
-    return async (payload: any, callback: any) => {
-        if (typeof callback !== "function" || rabbitMq === null) {
+export function createGroup(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
+    return async (data: any, callback: any) => {
+        if (typeof callback !== "function") {
             return;
         }
-        const payloadInstance = Object.assign(new Payload(), payload);
-        const errors = await validate(payloadInstance);
+        try {
+            const payload = await validation(data, NewGroup)
+            const newGroup = new Channel({
+                name: payload.name,
+                members: payload.members,
+                isGroup: true,
+            })
 
-        if (errors.length > 0) {
-            console.error("Validation errors", errors);
-            callback({ success: false, errors });
+            const jsonEvent = Buffer.from(JSON.stringify({ event: EventsEnum.NewGroup, data: newGroup.toJSON() }));
+
+            const promises: Promise<any>[] = [];
+            promises.push(newGroup.save());
+            for (const member of payload.members) {
+                rabbitMq.messageChannel.publish("messages", member.userId.toString(), jsonEvent);
+            }
+            await Promise.all(promises);
+            callback({ success: true, data: newGroup.toJSON() });
+        } catch (error) {
+            console.log(error);
+            callback({ success: false, errors: error });
+        }
+    }
+}
+
+export function createChat(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
+    return async (data: any, callback: any) => {
+        if (typeof callback !== "function") {
             return;
+        }
+        try {
+            const payload = await validation(data, NewChat)
+            const newChannel = new Channel({
+                members: [payload.member],
+                isGroup: false,
+            })
+
+            const jsonEvent = Buffer.from(JSON.stringify({ event: EventsEnum.NewChat, data: newChannel.toJSON() }));
+
+            const promises: Promise<any>[] = [];
+            promises.push(newChannel.save());
+            rabbitMq.messageChannel.publish("messages", payload.member.userId.toString(), jsonEvent);
+            await Promise.all(promises);
+            callback({ success: true, data: newChannel.toJSON() });
+        } catch (error) {
+            console.log(error);
+            callback({ success: false, errors: error });
+        }
+    }
+}
+
+export function getChannels(io: SocketIOServer, socket: Socket) {
+    return async (data: any, callback: any) => {
+        if (typeof callback !== "function") {
+            return;
+        }
+        try {
+            const channels = await Channel.find({
+                members: {
+                    $elemMatch: {
+                        userId: socket.user.userId,
+                    },
+                },
+            }).populate({
+                path: 'members.userId',
+                select: 'name email phoneNo image',
+            });
+
+            console.log("get Channel");
+            
+            callback({ success: true, data: channels });
+        } catch (error) {
+            console.log(error);
+            callback({ success: false, errors: error });
+        }
+    }
+}
+
+// export function getMessages(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
+//     return async (data: any, callback: any) => {
+//         if (typeof callback !== "function" || rabbitMq === null) {
+//             return;
+//         }
+//         const payloadInstance = Object.assign(new NewMessage(), data);
+//         const errors = await validate(payloadInstance);
+
+//         if (errors.length > 0) {
+//             console.error("Validation errors", errors);
+//             callback({ success: false, errors });
+//             return;
+//         }
+//     }
+// }
+
+export function disconnect(_io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
+    return async (data: string) => {
+        try {
+            console.log(data);
+            socket.removeAllListeners()
+            await rabbitMq?.messageChannel.unbindQueue(serverName, "messages", socket.user.userId.toString())
+            console.log("Disconnected: Socket %s UserId %s", socket.id, socket.user.userId)
+        } catch (error) {
+            console.log(error)
         }
     }
 }

@@ -1,7 +1,7 @@
 import { Socket, Server as SocketIOServer } from "socket.io"
 import { RabbitMQ } from "../rabbitmq"
-import { sendMessage } from "./socker-controller"
-
+import { sendMessage, disconnect, createGroup, getChannels, createChat } from "./socker-controller"
+import { EventsEnum } from "../enums"
 const serverName = process.env.SERVER_NAME as string
 
 const onConnection = async (io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) => {
@@ -11,18 +11,11 @@ const onConnection = async (io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
     socket.join(socket.user.userId.toString())
     rabbitMq.messageChannel.bindQueue(serverName, "messages", socket.user.userId.toString())
 
-    socket.on("send", sendMessage(io, socket, rabbitMq))
+    socket.on(EventsEnum.NewMessage, sendMessage(io, socket, rabbitMq))
+    socket.on(EventsEnum.NewGroup, createGroup(io, socket, rabbitMq));
+    socket.on(EventsEnum.NewChat, createChat(io, socket, rabbitMq));
+    socket.on(EventsEnum.GetChannels, getChannels(io, socket));
 
-    const disconnect = async (data: string) => {
-        try {
-            console.log(data);
-            socket.removeAllListeners()
-            await rabbitMq?.messageChannel.unbindQueue(serverName, "messages", socket.user.userId.toString())
-            console.log("Disconnected: Socket %s UserId %s", socket.id, socket.user.userId)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-    socket.on("disconnect", disconnect)
+    socket.on("disconnect", disconnect(io, socket, rabbitMq))
 }
 export default onConnection;

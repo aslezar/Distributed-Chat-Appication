@@ -44,7 +44,9 @@ export interface Member {
 }
 
 export interface IChannel extends Document {
+    name: string
     isGroup: boolean
+    groupImage: string
     members: Types.Array<Member>
     createdAt: Date
     updatedAt: Date

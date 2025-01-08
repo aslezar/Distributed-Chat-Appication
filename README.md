@@ -64,7 +64,6 @@ Learning various commonly used distributed technology
 - tried rabbitmq for message and user updation - not good if a node goes down he becomes unaware who is online.
 - using rabbitmq for message delivery and redis for cache channel members and user-server map
 
-
 for bucketting thing to work properly, server need to sync time.
 
 Can simultaneously handles 10k online users. Benchmarks are availble on the github.

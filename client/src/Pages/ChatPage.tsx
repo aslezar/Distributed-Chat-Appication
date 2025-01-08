@@ -1,41 +1,19 @@
-import { Link, NavLink, useParams } from "react-router-dom"
-import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
-import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
-import ViewProfileButton from "../components/ViewProfileButton"
+import CallProfile from "@/components/CallProfile"
+import ChatProfile from "@/components/ChatProfile"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useSocketContext } from "@/context/SocketContext"
+import { CallsProfileType, CallType } from "@/types"
+import { MessageCircle, MessageSquareText, Phone } from "lucide-react"
+import { Link, useParams } from "react-router-dom"
 import AddChat from "../components/AddChat"
 import Chat from "../components/Chat"
-import {
-    MessageCircle,
-    PhoneIncoming,
-    PhoneMissed,
-    PhoneOutgoing,
-    Video,
-    Phone,
-    MessageSquareText,
-} from "lucide-react"
-import { useAppSelector } from "@/hooks"
-import moment from "moment"
-import { useSocketContext } from "@/context/SocketContext"
-import { ContactType } from "@/types"
+import ViewProfileButton from "../components/ViewProfileButton"
 
 function randomInt(a: number, b: number) {
     return Math.floor(Math.random() * (b - a + 1)) + a
 }
 
-const nameInitials = (name: string) =>
-    name
-        .split(" ")
-        .map((word) => word.substring(0, 1).toUpperCase())
-        .join("")
-        .substring(0, 2)
-
-const enum CallType {
-    Missed = "Missed call",
-    Incoming = "Incoming call",
-    Outgoing = "Outgoing call",
-}
-
-const callsProfile = [
+const callsProfile: CallsProfileType[] = [
     {
         _id: "1",
         name: "John Doe",
@@ -62,101 +40,11 @@ const callsProfile = [
     },
 ]
 
-function CallProfile({ profile }: { profile: (typeof callsProfile)[0] }) {
-    return (
-        <div className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
-            <Avatar>
-                <AvatarImage alt="John Doe" src={profile.profileImage} />
-                <AvatarFallback>
-                    {profile.name
-                        .split(" ")
-                        .map((word) => word.substring(0, 1).toUpperCase())
-                        .join("")
-                        .substring(0, 2)}
-                </AvatarFallback>
-            </Avatar>
-
-            <div className="flex-1">
-                <div className="font-medium">John Doe</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                    {
-                        {
-                            [CallType.Missed]: (
-                                <PhoneMissed className="text-red-500 dark:text-red-400 h-4 w-4" />
-                            ),
-                            [CallType.Incoming]: (
-                                <PhoneIncoming className="text-green-500 dark:text-green-400 h-4 w-4" />
-                            ),
-                            [CallType.Outgoing]: (
-                                <PhoneOutgoing className="text-blue-500 dark:text-blue-400 h-4 w-4" />
-                            ),
-                        }[profile.type]
-                    }
-                    {profile.time}
-                </div>
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-                {profile.isVideoCall ? (
-                    <Video className="h-4 w-4 text-green-500 dark:text-green-400" />
-                ) : (
-                    <Phone className="h-4 w-4 text-blue-500 dark:text-blue-400" />
-                )}
-            </div>
-        </div>
-    )
-}
-
-function ChatProfile({ contact }: { contact: ContactType }) {
-    const { user } = useAppSelector((state) => state.user)
-    const { getContact } = useSocketContext()
-    const myUserId = user._id
-
-    const lastMsgSender = contact.lastMessage
-        ? getContact(contact.lastMessage?.senderId)
-        : undefined
-
-    return (
-        <NavLink
-            className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-200  dark:hover:bg-gray-700"
-            to={`/chat/${contact._id}`}
-        >
-            <Avatar>
-                <AvatarImage alt={contact.name} src={contact.image} />
-                <AvatarFallback>{nameInitials(contact.name)}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 text-left">
-                <div className="font-medium">{contact.name}</div>
-                {contact.lastMessage && lastMsgSender && (
-                    <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        {lastMsgSender._id === myUserId ? (
-                            <span className="font-semibold">You: </span>
-                        ) : contact.isGroup ? (
-                            <span className="font-semibold">
-                                {lastMsgSender.name.split(" ")[0] + ": "}
-                            </span>
-                        ) : null}
-                        {contact.lastMessage.message}
-                    </div>
-                )}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-                {contact.lastMessage
-                    ? moment(contact.lastMessage.createdAt).fromNow()
-                    : moment(contact.createdAt).fromNow()}
-            </div>
-        </NavLink>
-    )
-}
-
 export default function ChatPage() {
     const { chatId: chatSelected } = useParams()
-    const { allContactsAndGroups } = useSocketContext()
+    const { myChannels } = useSocketContext()
 
-    const contact = allContactsAndGroups.sort(
-        (a, b) =>
-            new Date(b.lastMessage?.createdAt || b.createdAt).getTime() -
-            new Date(a.lastMessage?.createdAt || a.createdAt).getTime(),
-    )
+    const channels = myChannels
 
     return (
         <div className="grid h-dvh w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
@@ -201,10 +89,10 @@ export default function ChatPage() {
                         value="chat"
                     >
                         <div className="grid gap-2 p-2">
-                            {contact.map((contact) => (
+                            {channels.map((channel) => (
                                 <ChatProfile
-                                    key={contact._id}
-                                    contact={contact}
+                                    key={channel._id}
+                                    channel={channel}
                                 />
                             ))}
                         </div>

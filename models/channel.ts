@@ -4,6 +4,14 @@ import { RolesEnum } from "../enums/roles"
 
 const ChannelSchema = new Schema<IChannel>(
     {
+        name: {
+            type: String,
+            default: "New Channel",
+        },
+        groupImage: {
+            type: String,
+            default: "",
+        },
         members: [
             {
                 userId: {
