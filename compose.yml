@@ -9,12 +9,36 @@ services:
         depends_on:
             - mongo
             - rabbitmq
+            - redis
         environment:
             PORT: 8000
             MONGO_URL: mongodb://mongo:27017/vibetalk
             SERVER_SELECTION_TIMEOUT_MS: 5000
+            RABBITMQ_URL: amqp://rabbitmq:5672
+            REDIS_URL: redis://redis:6379
+            SERVER_NAME: server
         ports:
             - "8000:8000"
+    server2:
+        restart: always
+        build:
+            context: ./
+            target: backend-dev
+        volumes:
+            - ./:/usr/local/app
+        depends_on:
+            - mongo
+            - rabbitmq
+            - redis
+        environment:
+            PORT: 8000
+            MONGO_URL: mongodb://mongo:27017/vibetalk
+            SERVER_SELECTION_TIMEOUT_MS: 5000
+            RABBITMQ_URL: amqp://rabbitmq:5672
+            REDIS_URL: redis://redis:6379
+            SERVER_NAME: server2
+        ports:
+            - "8002:8000"
 
     mongo:
         image: mongo:7.0-jammy
@@ -32,5 +56,10 @@ services:
         ports:
             - "5672:5672"
             - "15672:15672"
+    redis:
+        image: redis/redis-stack:latest
+        ports:
+            - "6379:6379"
+            - "8001:8001"
 volumes:
-  vibetalk-data:
+    vibetalk-data:

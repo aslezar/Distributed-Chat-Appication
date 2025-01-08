@@ -1,5 +1,5 @@
 import User from "./user"
-import Group from "./channel"
+import Channel from "./channel"
 import Message from "./message"
 
-export { User, Group, Message }
+export { User, Channel, Message }

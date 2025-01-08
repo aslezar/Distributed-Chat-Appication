@@ -1,9 +1,10 @@
 import mongoose from "mongoose"
-import { User, Group, Message } from "./models"
+import { User, Channel, Message } from "./models"
 import connectDB from "./db/connect"
 import dotenv from "dotenv"
 import { Types } from "mongoose"
 import bcrypt from "bcryptjs"
+import { RolesEnum } from "./enums"
 
 dotenv.config()
 
@@ -25,7 +26,7 @@ async function main() {
         // await mongoose.connection.db.dropDatabase()
 
         await User.deleteMany({})
-        await Group.deleteMany({})
+        await Channel.deleteMany({})
         await Message.deleteMany({})
 
         let salt = await bcrypt.genSalt(5)
@@ -39,7 +40,6 @@ async function main() {
             phoneNo: `123-456-78${i.toString().padStart(2, "0")}`,
             password: hashedPassword,
             profileImage: "https://source.unsplash.com/random",
-            myContacts: [] as Types.ObjectId[],
             status: "active",
             otp: undefined,
             createdAt: randomDate(),
@@ -53,7 +53,6 @@ async function main() {
             phoneNo: "1234567890",
             password: hashedPassword,
             profileImage: "https://source.unsplash.com/random",
-            myContacts: [],
             status: "active",
             otp: undefined,
             createdAt: randomDate(),
@@ -61,76 +60,30 @@ async function main() {
         })
 
         // Generate 4 dummy channels with random members
-        const dummyGroups = [
-            {
-                _id: new Types.ObjectId(),
-                name: "General",
-                image: "https://source.unsplash.com/random",
-                members: generateMembers(),
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-            {
-                _id: new Types.ObjectId(),
-                name: "Random",
-                image: "https://source.unsplash.com/random",
-                members: generateMembers(),
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-            {
-                _id: new Types.ObjectId(),
-                name: "Tech Talk",
-                image: "https://source.unsplash.com/random",
-                members: generateMembers(),
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-            {
-                _id: new Types.ObjectId(),
-                name: "Social",
-                image: "https://source.unsplash.com/random",
-                members: generateMembers(),
-                createdAt: randomDate(),
-                updatedAt: randomDate(),
-            },
-        ]
+        const dummyChannels = Array.from({ length: 4 }, () => ({
+            _id: new Types.ObjectId(),
+            members: generateMembers(),
+            isGroup: true,
+            createdAt: randomDate(),
+            updatedAt: randomDate(),
+        }))
 
         // Generate 50 dummy chat messages
         const dummyChatMessages = Array.from({ length: 50 }, (_, i) => {
             //select receiverId randomly from user or group
 
-            const isUser = Math.random() > 0.5
-            const receiverIndex = isUser
-                ? chooseRandomIndex(dummyUsers)
-                : chooseRandomIndex(dummyGroups)
+            const randomChannel = dummyChannels[chooseRandomIndex(dummyChannels)]
+            if (!randomChannel)
+                return
+            const randomUser = randomChannel.members[chooseRandomIndex(randomChannel.members)]
+            if (!randomUser)
+                return
 
-            let senderIndex = chooseRandomIndex(dummyUsers)
-            while (senderIndex === receiverIndex) {
-                senderIndex = chooseRandomIndex(dummyUsers)
-            }
-            if (isUser) {
-                if (
-                    !dummyUsers[receiverIndex].myContacts.includes(
-                        dummyUsers[senderIndex]._id,
-                    )
-                ) {
-                    dummyUsers[receiverIndex].myContacts.push(
-                        dummyUsers[senderIndex]._id,
-                    )
-                    dummyUsers[senderIndex].myContacts.push(
-                        dummyUsers[receiverIndex]._id,
-                    )
-                }
-            }
             return {
                 _id: new Types.ObjectId(),
-                //choose random user from channel members
-                senderId: dummyUsers[senderIndex]._id,
-                receiverId: isUser
-                    ? dummyUsers[receiverIndex]._id
-                    : dummyGroups[receiverIndex]._id,
-                modal: isUser ? "User" : "Group",
+                channelId: randomChannel._id,
+                bucket: Math.floor(Math.random() * 10),
+                senderId: randomUser.userId.toString(),
                 message: `Message ${i + 1}`,
                 createdAt: randomDate(),
                 updatedAt: randomDate(),
@@ -151,23 +104,24 @@ async function main() {
             }
 
             const members = Array.from(selectedIndex).map((index, i) => ({
-                user: dummyUsers[index]._id,
-                role: i === 0 ? "admin" : "member",
+                userId: dummyUsers[index]._id,
+                role: i === 0 ? RolesEnum.ADMIN : RolesEnum.MEMBER,
             }))
 
-            console.log(members)
+            // console.log(members)
             return members
         }
 
-        //make sure user.myContacts are unique
-        dummyUsers.forEach((user) => {
-            user.myContacts = Array.from(new Set(user.myContacts))
-        })
-
         // Insert the dummy data
-        await User.insertMany(dummyUsers)
+        const users = await User.insertMany(dummyUsers)
         await Message.insertMany(dummyChatMessages)
-        await Group.insertMany(dummyGroups)
+        await Channel.insertMany(dummyChannels)
+
+        for (const user of users) {
+            if (user.email === "hello@hello.com") {
+                console.log(user.generateSocketToken());
+            }
+        }
 
         console.log("Dummy data has been successfully created!")
         mongoose.connection.close()

@@ -1,4 +1,4 @@
-import { Schema, Types, Model } from "mongoose"
+import { Schema, Types, Model, Document } from "mongoose"
 import { RolesEnum, MessageStatusEnum } from "../../enums"
 export interface OTP {
     value: string

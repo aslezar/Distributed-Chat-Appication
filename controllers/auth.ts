@@ -6,7 +6,7 @@ import { Request, Response } from "express"
 import SendMail from "../utils/sendMail"
 import setAuthTokenCookie from "../utils/setCookie/setAuthToken"
 import { OAuth2Client } from "google-auth-library"
-import { io } from "../socketio"
+import { ioServer } from "../socketio"
 
 const client = new OAuth2Client()
 
@@ -209,7 +209,7 @@ const signOut = async (req: Request, res: Response) => {
         res.clearCookie(cookie)
     }
 
-    io?.sockets.sockets.forEach((socket) => {
+    ioServer?.sockets.sockets.forEach((socket) => {
         if (socket.user.userId === req.user?.userId) {
             socket.disconnect()
         }

@@ -1,6 +1,6 @@
 import { Schema, model } from "mongoose"
-import { IMessage as IMessage } from "../types/models"
 import { MessageStatusEnum } from "../enums"
+import { IMessage } from "../types/models"
 const messageSchema = new Schema<IMessage>(
     {
         channelId: {
@@ -30,7 +30,7 @@ const messageSchema = new Schema<IMessage>(
     { timestamps: true },
 )
 
-messageSchema.index({ channelId: 1, bucket: 1 })
+messageSchema.index({ channelId: 1, bucket: 1, _id: 1 })
 
 const ChatMessage = model<IMessage>("Message", messageSchema)
 export default ChatMessage

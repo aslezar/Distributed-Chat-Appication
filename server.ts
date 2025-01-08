@@ -26,6 +26,7 @@ import paginateMW from "./middleware/paginator"
 import errorHandler from "./middleware/error-handler"
 
 import socketIo from "./socketio"
+import RabbitMQ from './rabbitmq'
 
 //Start Express App
 const app: Express = express()
@@ -75,9 +76,6 @@ app.use(cors(corsOptions)) //enable CORS
 //Logger
 if (process.env.NODE_ENV === "development") app.use(morgan("dev"))
 
-//Socket.io
-socketIo(server, { cors: { origin: allowedOrigins } })
-
 const logDir: string = path.join(__dirname, "./log")
 //create dir if not exist
 if (!fs.existsSync(logDir)) {
@@ -111,11 +109,23 @@ app.use("/*", express.static("./client/dist/index.html"))
 //Error Handling Middleware
 app.use(errorHandler)
 
+// Catch 
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Promise Rejection:', reason);
+    process.exit(1);  // Exit with a non-zero status code
+});
+
 //Function Start
 async function start() {
     try {
         const db = await connectDB(process.env.MONGO_URL as string)
         console.log(`MongoDB Connected: ${db.connection.name}`)
+
+        const rabbitMq = await RabbitMQ();
+
+        //Socket.io
+        socketIo(server, rabbitMq, { cors: { origin: allowedOrigins } })
+
         server.listen(PORT, () => {
             console.log(
                 `⚡️[server]: Server is listening on http://localhost:${PORT}`,

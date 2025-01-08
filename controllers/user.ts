@@ -1,4 +1,4 @@
-import { User, Group } from "../models"
+import { User } from "../models"
 import { StatusCodes } from "http-status-codes"
 import { BadRequestError, UnauthenticatedError, NotFoundError } from "../errors"
 import { Request, Response } from "express"
@@ -105,32 +105,32 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-const getGroup = async (req: Request, res: Response) => {
-    console.log(req.params.groupId)
-    console.log("You are here")
+// const getGroup = async (req: Request, res: Response) => {
+//     console.log(req.params.groupId)
+//     console.log("You are here")
 
-    const groupId = req.params.groupId
-    const userId = req.user.userId
+//     const groupId = req.params.groupId
+//     const userId = req.user.userId
 
-    const group = await Group.findOne({
-        _id: groupId,
-        "members.user": userId,
-    }).populate("members.user", "name image phoneNo")
+//     const group = await Group.findOne({
+//         _id: groupId,
+//         "members.user": userId,
+//     }).populate("members.user", "name image phoneNo")
 
-    if (!group)
-        throw new NotFoundError("Group Not Found or You are not authorized.")
+//     if (!group)
+//         throw new NotFoundError("Group Not Found or You are not authorized.")
 
-    return res.status(StatusCodes.OK).json({
-        data: group,
-        success: true,
-        // msg: `Group ${group.name} Fetched Successfully`,
-    })
-}
+//     return res.status(StatusCodes.OK).json({
+//         data: group,
+//         success: true,
+//         // msg: `Group ${group.name} Fetched Successfully`,
+//     })
+// }
 
 export {
     getMe,
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    getGroup,
+    // getGroup,
 }
