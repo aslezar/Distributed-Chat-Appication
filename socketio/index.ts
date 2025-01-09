@@ -6,6 +6,7 @@ import { ServerOptions, Server as SocketIOServer } from "socket.io"
 import { RabbitMQ } from "../rabbitmq"
 import { TempUserPayload, UserPayload } from "../types/express"
 import onConnection from "./connect"
+import { EventsEnum } from "../enums"
 
 const serverName = process.env.SERVER_NAME as string
 
@@ -46,7 +47,7 @@ export default (server: HttpServer, rabbitMq: RabbitMQ, options: Partial<ServerO
     rabbitMq.messageChannel.consume(serverName, (msg) => {
         console.log(`Recieved message: ${msg?.content.toString()}`);
         if (msg === null) return
-        io.to(msg.fields.routingKey).emit("message:new", msg.content.toString())
+        io.to(msg.fields.routingKey).emit(EventsEnum.Event, JSON.parse(msg.content.toString()))
         rabbitMq.messageChannel.ack(msg)
     })
 }

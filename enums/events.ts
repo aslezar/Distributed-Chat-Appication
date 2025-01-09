@@ -3,4 +3,6 @@ export enum EventsEnum {
     NewGroup = "group:new",
     NewChat = "group:chat",
     GetChannels = "channels:get",
+    Event = "event",
+    GetServerInfo = "server:info",
 }

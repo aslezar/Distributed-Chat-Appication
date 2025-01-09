@@ -34,6 +34,6 @@ const ChannelSchema = new Schema<IChannel>(
     { timestamps: true },
 )
 
-ChannelSchema.index({ members: 1 })
+ChannelSchema.index({ "members.userId": 1 })
 const Channel = model<IChannel>("Channel", ChannelSchema)
 export default Channel
