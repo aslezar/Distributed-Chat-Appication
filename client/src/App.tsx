@@ -6,20 +6,20 @@ import {
     ScrollRestoration,
     createBrowserRouter,
 } from "react-router-dom"
-import { useAppDispatch, useAppSelector } from "./hooks"
-import { loadUser } from "./features/userSlice"
 import { SocketContextProvider } from "./context/SocketContext"
+import { loadUser } from "./features/userSlice"
+import { useAppDispatch, useAppSelector } from "./hooks"
 
 //Components
-import Navbar from "./components/Navbar"
 import Footer from "./components/Footer"
 import LoaderFullPage from "./components/LoaderFullPage"
+import Navbar from "./components/Navbar"
 
 //Pages
+import ChatPage from "./Pages/ChatPage"
+import ErrorPage from "./Pages/ErrorPage"
 import HomePage from "./Pages/HomePage"
 import SignUp from "./Pages/SignUpPage"
-import ErrorPage from "./Pages/ErrorPage"
-import ChatPage from "./Pages/ChatPage"
 
 const Layout = () => {
     const { isAuthenticated } = useAppSelector((state) => state.user)

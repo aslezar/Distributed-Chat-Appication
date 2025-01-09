@@ -1,24 +1,28 @@
+import { deleteProfileImage, updateImage, updateProfile } from "@/api"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogContent,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog"
-import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Camera, Trash } from "lucide-react"
-import { useAppDispatch, useAppSelector } from "../hooks"
-import { logout, updateName, updateProfileImage } from "../features/userSlice"
 import { useRef, useState } from "react"
-import ModeToggle from "./MoodToggle"
-import { deleteProfileImage, updateProfile, updateImage } from "@/api"
 import toast from "react-hot-toast"
+import { logout, updateName, updateProfileImage } from "../features/userSlice"
+import { useAppDispatch, useAppSelector } from "../hooks"
+import ModeToggle from "./MoodToggle"
 import { Label } from "./ui/label"
 
-export default function ViewProfileButton() {
+export default function ViewProfileButton({
+    server,
+}: {
+    server: string | null
+}) {
     const nameInputRef = useRef<HTMLInputElement>(null)
     const [disableButton, setDisableButton] = useState(true)
 
@@ -163,12 +167,23 @@ export default function ViewProfileButton() {
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             {user.phoneNo}
                         </p>
-                        {import.meta.env.DEV && (
+                        {/* {import.meta.env.DEV && (
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {user._id}
+                                ID: {user._id}
                             </p>
-                        )}
+                        )} */}
                     </div>
+                    {server && (
+                        <div className="flex items-center space-x-2">
+                            <span className="text-lg font-medium text-green-500">
+                                ✔
+                            </span>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                Connected to Server:{" "}
+                                <span className="font-semibold">{server}</span>
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <DialogFooter className="flex justify-end p-4 gap-4">

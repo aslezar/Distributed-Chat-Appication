@@ -11,27 +11,33 @@ const nameInitials = (name: string) =>
         .substring(0, 2)
 
 export default function Messages({ channel }: { channel: MyChannelsType }) {
-    const { user } = useAppSelector((state) => state.user)
-    const myUserId = user._id
+    const myUserId = useAppSelector((state) => state.user.user._id)
 
-    const messages: MessageType[] = []
+    const messages = channel.messages
 
     return (
-        <div className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col-reverse gap-4">
+        <div
+            className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col gap-4-reverse"
+            ref={(el) => {
+            if (el) {
+                el.scrollTop = el.scrollHeight
+            }
+            }}
+        >
             {messages.map((message) =>
-                message.senderId === myUserId ? (
-                    <MyMessage key={message._id} message={message} />
-                ) : (
-                    <OtherMessage
-                        key={message._id}
-                        message={message}
-                        sender={
-                            channel.members.find(
-                                ({ userId }) => userId._id === message.senderId,
-                            )?.userId
-                        }
-                    />
-                ),
+            message.senderId === myUserId ? (
+                <MyMessage key={message._id} message={message} />
+            ) : (
+                <OtherMessage
+                key={message._id}
+                message={message}
+                sender={
+                    channel.members.find(
+                    ({ userId }) => userId._id === message.senderId,
+                    )?.userId
+                }
+                />
+            ),
             )}
         </div>
     )

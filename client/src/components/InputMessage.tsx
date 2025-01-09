@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useSocketContext } from "@/context/SocketContext"
-import { Paperclip, Send } from "lucide-react"
+import { MyChannelsType } from "@/types"
+import { Send } from "lucide-react"
 import { useEffect, useRef } from "react"
 import EmojiPicker from "../components/EmojiPicker"
-import { MyChannelsType } from "@/types"
 
 export default function InputMessage({ channel }: { channel: MyChannelsType }) {
     const inputRef = useRef<HTMLInputElement>(null)

@@ -25,7 +25,7 @@ interface CounterState {
     isAuthenticated: boolean
     user: UserType
 }
-;``
+; ``
 const initialState: CounterState = {
     loading: true,
     isAuthenticated: false,

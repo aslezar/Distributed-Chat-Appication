@@ -1,20 +1,20 @@
-import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
     InputOTP,
     InputOTPGroup,
     InputOTPSeparator,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { TabsTrigger, TabsList, TabsContent, Tabs } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { useNavigate } from "react-router-dom"
 import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { useAppDispatch, useAppSelector } from "../hooks"
-import { login, verification } from "../features/userSlice"
-import ContinueWithGoogleButton from "../components/ContinueWithGoogleButton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeft } from "lucide-react"
-import { signUp, forgotPassword } from "../api"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { forgotPassword, signUp } from "../api"
+import ContinueWithGoogleButton from "../components/ContinueWithGoogleButton"
+import { login, verification } from "../features/userSlice"
+import { useAppDispatch, useAppSelector } from "../hooks"
 
 const enum STEPS {
     LoginSignUp = "login",

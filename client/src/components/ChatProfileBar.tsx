@@ -19,8 +19,7 @@ export default function ChatProfileBar({
     channel: MyChannelsType
 }) {
     const navigate = useNavigate()
-    const { user } = useAppSelector((state) => state.user)
-    const myUserId = user._id
+    const myUserId = useAppSelector((state) => state.user.user._id)
 
     if (channel.isGroup) {
         return (

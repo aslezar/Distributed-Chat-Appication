@@ -19,6 +19,13 @@ const NavBar = () => {
                 <Button
                     variant="link"
                     className="text-sm font-medium hover:underline underline-offset-4"
+                    onClick={() => navigate("/#home")}
+                >
+                    Home
+                </Button>
+                <Button
+                    variant="link"
+                    className="text-sm font-medium hover:underline underline-offset-4"
                     onClick={() => navigate("/#features")}
                 >
                     Features

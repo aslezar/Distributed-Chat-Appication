@@ -3,6 +3,7 @@ import ChatProfile from "@/components/ChatProfile"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSocketContext } from "@/context/SocketContext"
 import { CallsProfileType, CallType } from "@/types"
+import { compareObjectIdTimestamp } from "@/utils/functinos"
 import { MessageCircle, MessageSquareText, Phone } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 import AddChat from "../components/AddChat"
@@ -42,9 +43,13 @@ const callsProfile: CallsProfileType[] = [
 
 export default function ChatPage() {
     const { chatId: chatSelected } = useParams()
-    const { myChannels } = useSocketContext()
+    const { server, myChannels } = useSocketContext()
 
-    const channels = myChannels
+    const channels = myChannels.sort((a, b) => {
+        const aLastMessage = a.messages[a.messages.length - 1]?._id
+        const bLastMessage = b.messages[b.messages.length - 1]?._id
+        return compareObjectIdTimestamp(aLastMessage, bLastMessage)
+    })
 
     return (
         <div className="grid h-dvh w-full sm:grid-cols-[350px_1fr] bg-white dark:bg-gray-950">
@@ -61,9 +66,10 @@ export default function ChatPage() {
                     </Link>
                     <div className="flex gap-2">
                         <AddChat />
-                        <ViewProfileButton />
+                        <ViewProfileButton server={server} />
                     </div>
                 </div>
+
                 <Tabs
                     className="max-h-[calc(100%-75px)] w-full flex flex-col"
                     defaultValue="chat"

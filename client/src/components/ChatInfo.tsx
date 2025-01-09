@@ -65,7 +65,9 @@ export default function ChatInfo({
                             Add Member
                         </Button>
                     )}
-                    <Button variant="outline">Leave Group</Button>
+                    <Button variant="outline" disabled>
+                        Leave Group
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
