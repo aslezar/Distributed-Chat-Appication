@@ -16,7 +16,7 @@ export default function CallProfile({
     return (
         <div className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
             <Avatar>
-                <AvatarImage alt="John Doe" src={profile.profileImage} />
+                <AvatarImage alt={profile.name} src={profile.profileImage} />
                 <AvatarFallback>
                     {profile.name
                         .split(" ")

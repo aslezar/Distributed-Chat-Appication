@@ -1,8 +1,13 @@
 import { MessageType, MyChannelsType } from "@/types"
 import { X } from "lucide-react"
 import toast from "react-hot-toast"
+import { NavigateFunction } from "react-router-dom"
 
-const toastMessage = (message: MessageType, channel: MyChannelsType) => {
+const ToastMessage = (
+    message: MessageType,
+    channel: MyChannelsType,
+    navigate: NavigateFunction,
+) => {
     let { name, groupImage: image } = channel
 
     if (!channel.isGroup) {
@@ -24,7 +29,13 @@ const toastMessage = (message: MessageType, channel: MyChannelsType) => {
                     t.visible ? "animate-enter" : "animate-leave"
                 } max-w-md w-full bg-white shadow-xl rounded-lg pointer-events-auto flex overflow-hidden transform transition-all duration-300 ease-in-out hover:shadow-2xl`}
             >
-                <div className="flex-1 p-4">
+                <button
+                    className="flex-1 p-4"
+                    onClick={() => {
+                        toast.remove(t.id)
+                        navigate(`/chat/${channel._id}`)
+                    }}
+                >
                     <div className="flex items-start space-x-4">
                         <div className="flex-shrink-0">
                             <img
@@ -42,20 +53,20 @@ const toastMessage = (message: MessageType, channel: MyChannelsType) => {
                             </p>
                         </div>
                         <button
-                            onClick={() => toast.dismiss(t.id)}
+                            onClick={() => toast.remove(t.id)}
                             className="flex-shrink-0 ml-4 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1 transition-colors duration-200"
                         >
                             <X size={16} />
                         </button>
                     </div>
-                </div>
+                </button>
             </div>
         ),
         {
             id: channel._id,
-            duration: 5000,
+            // duration: 5000,
             position: "top-right",
         },
     )
 }
-export default toastMessage
+export default ToastMessage

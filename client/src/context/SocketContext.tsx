@@ -1,4 +1,4 @@
-import toastMessage from "@/components/ToastMessage"
+import ToastMessage from "@/components/ToastMessage"
 import { useAppSelector } from "@/hooks"
 import {
     MessageType,
@@ -172,7 +172,7 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
                     if (selectedChannel?._id === message.channelId) return
                     console.log("Showing toast msg")
 
-                    toastMessage(message, channel)
+                    ToastMessage(message, channel,navigate)
                     break
                 }
                 case SocketsEventsEnum.NewChat:

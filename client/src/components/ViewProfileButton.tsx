@@ -79,6 +79,7 @@ export default function ViewProfileButton({
     }
 
     if (!user) return <div>Null</div>
+    console.log(user)
 
     return (
         <Dialog
@@ -88,7 +89,7 @@ export default function ViewProfileButton({
         >
             <DialogTrigger>
                 <Avatar className="h-10 w-10">
-                    <AvatarImage alt="Profile Photo" src={user.image} />
+                    <AvatarImage alt={user.name} src={user.image} />
                     <AvatarFallback>
                         {user.name
                             .split(" ")

@@ -17,7 +17,7 @@ export default function Messages({ channel }: { channel: MyChannelsType }) {
 
     return (
         <div
-            className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col gap-4-reverse"
+            className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col gap-4"
             ref={(el) => {
             if (el) {
                 el.scrollTop = el.scrollHeight

@@ -109,7 +109,7 @@ export function createGroup(io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
 
             const messageToBroadcast = {
                 event: EventsEnum.NewGroup,
-                data: newGroup.toJSON(),
+                data: { ...newGroup.toJSON(), messages: [] },
             }
 
             broadcastMessage(rabbitMq, newGroup.members.map((m) => m.userId._id.toString()), messageToBroadcast);
@@ -156,7 +156,7 @@ export function createChat(io: SocketIOServer, socket: Socket, rabbitMq: RabbitM
             await newChannel.save();
             const messageToBroadcast = {
                 event: EventsEnum.NewChat,
-                data: newChannel.toJSON(),
+                data: { ...newChannel.toJSON(), messages: [] },
             }
             broadcastMessage(rabbitMq, newChannel.members.map((m) => m.userId._id.toString()), messageToBroadcast);
             callback({ success: true, data: newChannel._id });
@@ -220,22 +220,6 @@ export function getServerName(io: SocketIOServer, socket: Socket) {
         callback({ success: true, data: serverName });
     }
 }
-
-// export function getMessages(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
-//     return async (data: any, callback: any) => {
-//         if (typeof callback !== "function" || rabbitMq === null) {
-//             return;
-//         }
-//         const payloadInstance = Object.assign(new NewMessage(), data);
-//         const errors = await validate(payloadInstance);
-
-//         if (errors.length > 0) {
-//             console.error("Validation errors", errors);
-//             callback({ success: false, errors });
-//             return;
-//         }
-//     }
-// }
 
 export function disconnect(_io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
     return async (data: string) => {
