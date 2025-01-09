@@ -3,7 +3,7 @@ import { Socket, Server as SocketIOServer } from "socket.io";
 import { EventsEnum, RolesEnum } from "../enums";
 import { Channel, Message } from "../models";
 import ChatMessage from "../models/message";
-import { RabbitMQ } from "../rabbitmq";
+import { RabbitMQ } from "../utils/rabbitmq";
 import { getBucket } from "../utils/buckets";
 import { NewChat, NewGroup, NewMessage, validatePayload } from "../socketio/validation";
 

@@ -1,7 +1,7 @@
 import { Socket, Server as SocketIOServer } from "socket.io"
 import { createChat, createGroup, disconnect, getChannels, getServerName, sendMessage } from "../controllers/message"
 import { EventsEnum } from "../enums"
-import { RabbitMQ } from "../rabbitmq"
+import { RabbitMQ } from "../utils/rabbitmq"
 const serverName = process.env.SERVER_NAME as string
 
 const onConnection = async (io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) => {

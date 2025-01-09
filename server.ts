@@ -26,7 +26,7 @@ import paginateMW from "./middleware/paginator"
 import errorHandler from "./middleware/error-handler"
 
 import socketIo from "./socketio"
-import RabbitMQ from './rabbitmq'
+import RabbitMQ from './utils/rabbitmq'
 
 //Start Express App
 const app: Express = express()
