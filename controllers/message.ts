@@ -1,4 +1,3 @@
-import { validate } from "class-validator";
 import { Schema, Types } from "mongoose";
 import { Socket, Server as SocketIOServer } from "socket.io";
 import { EventsEnum, RolesEnum } from "../enums";
@@ -6,23 +5,9 @@ import { Channel, Message } from "../models";
 import ChatMessage from "../models/message";
 import { RabbitMQ } from "../rabbitmq";
 import { getBucket } from "../utils/buckets";
-import { Type } from "./type.interface";
-import { NewChat, NewGroup, NewMessage } from "./validation";
+import { NewChat, NewGroup, NewMessage, validatePayload } from "../socketio/validation";
 
 const serverName = process.env.SERVER_NAME as string
-
-function validation<T>(payload: any, classRef: Type<T>): Promise<T> {
-    return new Promise((resolve, reject) => {
-        const payloadInstance = Object.assign(Object.assign({}, new classRef()), payload);
-        validate(payloadInstance).then((errors) => {
-            if (errors.length > 0) {
-                reject(errors);
-            } else {
-                resolve(payloadInstance);
-            }
-        });
-    });
-}
 
 function broadcastMessage<T>(rabbitMq: RabbitMQ, members: string[], message: any) {
     const jsonEvent = Buffer.from(JSON.stringify(message));
@@ -38,7 +23,7 @@ export function sendMessage(io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
         }
         try {
 
-            const payload = await validation(data, NewMessage)
+            const payload = await validatePayload(data, NewMessage)
 
             const channel = await Channel.findById(payload.channelId);
             // check if part of the channel
@@ -77,7 +62,7 @@ export function createGroup(io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
             return;
         }
         try {
-            const payload = await validation(data, NewGroup)
+            const payload = await validatePayload(data, NewGroup)
             const members = Array.from(new Set(payload.members))
                 .filter((m) => m !== socket.user.userId.toString())
                 .map((m) => ({ userId: m, role: RolesEnum.MEMBER }))
@@ -128,7 +113,7 @@ export function createChat(io: SocketIOServer, socket: Socket, rabbitMq: RabbitM
             return;
         }
         try {
-            const payload = await validation(data, NewChat)
+            const payload = await validatePayload(data, NewChat)
 
             const { _id } = await Channel.create({
                 members: [{ userId: payload.member }, { userId: socket.user.userId }],

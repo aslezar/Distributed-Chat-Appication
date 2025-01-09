@@ -1,6 +1,6 @@
-import { IsEnum, IsMongoId, IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsMongoId, IsNotEmpty, IsString, validate } from "class-validator";
 import { RolesEnum } from "../enums";
-
+import { Type } from "../types/type.interface";
 export class NewMessage {
     @IsMongoId()
     @IsNotEmpty()
@@ -34,4 +34,17 @@ export class NewChat {
     @IsNotEmpty()
     @IsMongoId()
     member!: string;
+}
+
+export function validatePayload<T>(payload: any, classRef: Type<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+        const payloadInstance = Object.assign(Object.assign({}, new classRef()), payload);
+        validate(payloadInstance).then((errors) => {
+            if (errors.length > 0) {
+                reject(errors);
+            } else {
+                resolve(payloadInstance);
+            }
+        });
+    });
 }

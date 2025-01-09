@@ -56,6 +56,47 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         )
     }, [myChannels, user._id])
 
+    const handleEvent = useCallback(
+        (data: { event: string; data: any }) => {
+            console.log(data)
+
+            switch (data.event) {
+                case SocketsEventsEnum.NewMessage: {
+                    const message = data.data as MessageType
+
+                    const channel = myChannels.find(
+                        (channel) => channel._id === message.channelId,
+                    )
+                    // const sen
+                    if (!channel) {
+                        console.log("Channel not found")
+                        return
+                    }
+                    // save message
+                    channel.messages?.push(message)
+                    setMyChannels(() => [...myChannels])
+                    if (message.senderId === user._id) return
+                    if (selectedChannel?._id === message.channelId) return
+                    console.log("Showing toast msg")
+
+                    ToastMessage(message, channel, navigate)
+                    break
+                }
+                case SocketsEventsEnum.NewChat:
+                case SocketsEventsEnum.NewGroup: {
+                    console.log("New chat")
+
+                    const channel = data.data as MyChannelsType
+                    setMyChannels((prev) => [...prev, channel])
+                    break
+                }
+                default:
+                    break
+            }
+        },
+        [myChannels, allContacts],
+    )
+
     const myContacts = useMemo(() => {
         return Array.from(
             new Map(
@@ -118,17 +159,12 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
             )
         }
         const onReconnect = () => {
-            // if (import.meta.env.DEV)
             toast.success(`Connected`, {
                 id: "socket-connection",
             })
             console.log("Reconnected")
         }
         const onConnect_error = (err: Error) => {
-            // if (import.meta.env.DEV) socketConnection.disconnect()
-            // toast.error(`Disconnected`, {
-            //     id: "socket-connection",
-            // })
             console.log(`connect_error due to ${err.message}`)
         }
         const onDisconnect = (reason: Socket.DisconnectReason) => {
@@ -149,46 +185,6 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [loading, isAuthenticated, user.socketToken])
 
-    const handleEvent = useCallback(
-        (data: { event: string; data: any }) => {
-            console.log(data)
-
-            switch (data.event) {
-                case SocketsEventsEnum.NewMessage: {
-                    const message = data.data as MessageType
-
-                    const channel = myChannels.find(
-                        (channel) => channel._id === message.channelId,
-                    )
-                    // const sen
-                    if (!channel) {
-                        console.log("Channel not found")
-                        return
-                    }
-                    // save message
-                    channel.messages?.push(message)
-                    setMyChannels(() => [...myChannels])
-                    if (message.senderId === user._id) return
-                    if (selectedChannel?._id === message.channelId) return
-                    console.log("Showing toast msg")
-
-                    ToastMessage(message, channel,navigate)
-                    break
-                }
-                case SocketsEventsEnum.NewChat:
-                case SocketsEventsEnum.NewGroup: {
-                    console.log("New chat")
-
-                    const channel = data.data as MyChannelsType
-                    setMyChannels((prev) => [...prev, channel])
-                    break
-                }
-                default:
-                    break
-            }
-        },
-        [myChannels, allContacts],
-    )
     useEffect(() => {
         if (!socket) return
 
