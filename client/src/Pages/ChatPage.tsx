@@ -1,5 +1,6 @@
 import CallProfile from "@/components/CallProfile"
 import ChatProfile from "@/components/ChatProfile"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSocketContext } from "@/context/SocketContext"
 import { CallsProfileType, CallType } from "@/types"
@@ -45,7 +46,7 @@ export default function ChatPage() {
     const { chatId: chatSelected } = useParams()
     const { server, myChannels } = useSocketContext()
 
-    const channels = myChannels.sort((a, b) => {
+    const  channels = myChannels.sort((a, b) => {
         const aLastMessage = a.messages[a.messages.length - 1]?._id
         const bLastMessage = b.messages[b.messages.length - 1]?._id
         return compareObjectIdTimestamp(aLastMessage, bLastMessage)
@@ -90,31 +91,37 @@ export default function ChatPage() {
                             Calls
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent
-                        className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
-                        value="chat"
-                    >
-                        <div className="grid gap-2 p-2">
-                            {channels.map((channel) => (
-                                <ChatProfile
-                                    key={channel._id}
-                                    channel={channel}
-                                />
-                            ))}
-                        </div>
+                    <TabsContent value="chat">
+                        <ScrollArea className="max-h-[calc(100dvh-130px)] flex flex-col">
+                            <div className="grid gap-2 p-2">
+                                {channels.map((channel) => (
+                                    <ChatProfile
+                                        key={channel._id}
+                                        channel={channel}
+                                    />
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </TabsContent>
-                    <TabsContent
-                        className="max-h-[calc(100vh-130px)] flex-1 overflow-y-scroll"
-                        value="calls"
-                    >
-                        <div className="grid gap-2 p-2">
-                            {callsProfile.map((profile) => (
-                                <CallProfile
-                                    key={profile._id}
-                                    profile={profile}
-                                />
-                            ))}
-                        </div>
+                    <TabsContent value="calls">
+                        <ScrollArea className="max-h-[calc(100dvh-130px)] flex flex-col">
+                            <div className="grid gap-2 p-2">
+                                <div className="text-center text-gray-600 my-4">
+                                    <p>
+                                        📞 The calling feature is currently
+                                        under development. We're working hard to
+                                        bring it to you soon!
+                                    </p>
+                                    <p>Stay tuned for updates! 🎉</p>
+                                </div>
+                                {callsProfile.map((profile) => (
+                                    <CallProfile
+                                        key={profile._id}
+                                        profile={profile}
+                                    />
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </TabsContent>
                 </Tabs>
             </div>

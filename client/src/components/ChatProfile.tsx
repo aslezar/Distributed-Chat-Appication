@@ -53,7 +53,9 @@ export default function ChatProfile({ channel }: { channel: MyChannelsType }) {
                                 {lastSender.name.split(" ")[0] + ": "}
                             </span>
                         ) : null}
-                        {lastMessage.message}
+                        {lastMessage.message.length > 18
+                            ? lastMessage.message.substring(0, 18) + "..."
+                            : lastMessage.message}
                     </div>
                 )}
             </div>

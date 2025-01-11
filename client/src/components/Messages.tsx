@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAppSelector } from "@/hooks"
 import { MessageType, MyChannelsType, MyContactType } from "@/types"
 import moment from "moment"
@@ -16,30 +17,23 @@ export default function Messages({ channel }: { channel: MyChannelsType }) {
     const messages = channel.messages
 
     return (
-        <div
-            className="max-h-[calc(100dvh-120px)] flex-1 overflow-y-scroll p-4 flex flex-col gap-4"
-            ref={(el) => {
-            if (el) {
-                el.scrollTop = el.scrollHeight
-            }
-            }}
-        >
+        <ScrollArea className="max-h-[calc(100dvh-120px)] flex-1 p-4 flex flex-col gap-4">
             {messages.map((message) =>
-            message.senderId === myUserId ? (
-                <MyMessage key={message._id} message={message} />
-            ) : (
-                <OtherMessage
-                key={message._id}
-                message={message}
-                sender={
-                    channel.members.find(
-                    ({ userId }) => userId._id === message.senderId,
-                    )?.userId
-                }
-                />
-            ),
+                message.senderId === myUserId ? (
+                    <MyMessage key={message._id} message={message} />
+                ) : (
+                    <OtherMessage
+                        key={message._id}
+                        message={message}
+                        sender={
+                            channel.members.find(
+                                ({ userId }) => userId._id === message.senderId,
+                            )?.userId
+                        }
+                    />
+                ),
             )}
-        </div>
+        </ScrollArea>
     )
 }
 

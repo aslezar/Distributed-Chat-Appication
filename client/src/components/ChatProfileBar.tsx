@@ -47,14 +47,14 @@ export default function ChatProfileBar({
                     </div>
                 </div>
                 <div className="flex items-center gap-0 sm:gap-2">
-                    <Button size="icon" variant="ghost">
+                    {/* <Button size="icon" variant="ghost">
                         <Video className="h-5 w-5" />
                         <span className="sr-only">Video Call</span>
                     </Button>
                     <Button size="icon" variant="ghost">
                         <Phone className="h-5 w-5" />
                         <span className="sr-only">Voice Call</span>
-                    </Button>
+                    </Button> */}
                     <ChatInfo channel={channel} myUserId={myUserId} />
                 </div>
             </div>
@@ -92,7 +92,7 @@ export default function ChatProfileBar({
                     </div> */}
                 </div>
             </div>
-            <div className="flex items-center gap-0 sm:gap-2">
+            {/* <div className="flex items-center gap-0 sm:gap-2">
                 <Button size="icon" variant="ghost">
                     <Video className="h-5 w-5" />
                     <span className="sr-only">Video Call</span>
@@ -101,7 +101,7 @@ export default function ChatProfileBar({
                     <Phone className="h-5 w-5" />
                     <span className="sr-only">Voice Call</span>
                 </Button>
-            </div>
+            </div> */}
         </div>
     )
 }
