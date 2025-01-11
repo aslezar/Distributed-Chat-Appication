@@ -3,11 +3,10 @@ import { Socket, Server as SocketIOServer } from "socket.io";
 import { EventsEnum, RolesEnum } from "../enums";
 import { Channel, Message } from "../models";
 import ChatMessage from "../models/message";
-import { RabbitMQ } from "../utils/rabbitmq";
-import { getBucket } from "../utils/buckets";
 import { NewChat, NewGroup, NewMessage, validatePayload } from "../socketio/validation";
-
-const serverName = process.env.SERVER_NAME as string
+import { getBucket } from "../utils/buckets";
+import { queueName, RabbitMQ } from "../utils/rabbitmq";
+import { serverId } from '../utils/server-id';
 
 function broadcastMessage<T>(rabbitMq: RabbitMQ, members: string[], message: any) {
     const jsonEvent = Buffer.from(JSON.stringify(message));
@@ -202,7 +201,7 @@ export function getServerName(io: SocketIOServer, socket: Socket) {
         if (typeof callback !== "function") {
             return;
         }
-        callback({ success: true, data: serverName });
+        callback({ success: true, data: serverId });
     }
 }
 
@@ -211,7 +210,7 @@ export function disconnect(_io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
         try {
             console.log(data);
             socket.removeAllListeners()
-            await rabbitMq?.messageChannel.unbindQueue(serverName, "messages", socket.user.userId.toString())
+            await rabbitMq?.messageChannel.unbindQueue(queueName, "messages", socket.user.userId.toString())
             console.log("Disconnected: Socket %s UserId %s", socket.id, socket.user.userId)
         } catch (error) {
             console.log(error)

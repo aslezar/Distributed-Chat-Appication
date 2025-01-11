@@ -3,12 +3,10 @@ import { Server as HttpServer } from "http"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
 import { ServerOptions, Server as SocketIOServer } from "socket.io"
-import { RabbitMQ } from "../utils/rabbitmq"
+import { RabbitMQ, queueName } from "../utils/rabbitmq"
 import { TempUserPayload, UserPayload } from "../types/express"
 import onConnection from "./connect"
 import { EventsEnum } from "../enums"
-
-const serverName = process.env.SERVER_NAME as string
 
 export let ioServer: SocketIOServer | null = null
 
@@ -44,7 +42,7 @@ export default (server: HttpServer, rabbitMq: RabbitMQ, options: Partial<ServerO
     })
 
     io.on("connection", async (socket) => await onConnection(io, socket, rabbitMq))
-    rabbitMq.messageChannel.consume(serverName, (msg) => {
+    rabbitMq.messageChannel.consume(queueName, (msg) => {
         console.log(`Recieved message: ${msg?.content.toString()}`);
         if (msg === null) return
         io.to(msg.fields.routingKey).emit(EventsEnum.Event, JSON.parse(msg.content.toString()))

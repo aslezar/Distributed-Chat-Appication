@@ -1,12 +1,12 @@
 import * as amqplib from 'amqplib';
-
+import { serverId } from '../server-id'
 
 export interface RabbitMQ {
     connection: amqplib.Connection;
     messageChannel: amqplib.Channel;
 }
 
-const serverName = process.env.SERVER_NAME as string
+export const queueName = serverId;
 const rabbitMQURL = process.env.RABBITMQ_URL || 'amqp://localhost'
 
 // Establish a connection to RabbitMQ
@@ -26,7 +26,7 @@ const connect = async () => {
         await messageChannel.prefetch(1);
 
         messageChannel.assertExchange("messages", "direct", { durable: true });
-        messageChannel.assertQueue(serverName, { exclusive: true, durable: true, autoDelete: true })
+        messageChannel.assertQueue(queueName, { exclusive: true, durable: true, autoDelete: true })
 
         connection.on("close", () => {
             console.error("RabbitMQ Connection Closed");
