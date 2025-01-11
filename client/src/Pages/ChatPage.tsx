@@ -46,7 +46,7 @@ export default function ChatPage() {
     const { chatId: chatSelected } = useParams()
     const { server, myChannels } = useSocketContext()
 
-    const  channels = myChannels.sort((a, b) => {
+    const channels = myChannels.sort((a, b) => {
         const aLastMessage = a.messages[a.messages.length - 1]?._id
         const bLastMessage = b.messages[b.messages.length - 1]?._id
         return compareObjectIdTimestamp(aLastMessage, bLastMessage)
@@ -109,7 +109,7 @@ export default function ChatPage() {
                                 <div className="text-center text-gray-600 my-4">
                                     <p>
                                         📞 The calling feature is currently
-                                        under development. We're working hard to
+                                        under development. We're working to
                                         bring it to you soon!
                                     </p>
                                     <p>Stay tuned for updates! 🎉</p>
