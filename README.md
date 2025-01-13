@@ -1,30 +1,24 @@
 # Distributed Chat Application | VibeTalk
 
-The backend is distributed and horiziontally scalable.
-
-This is Distributed Chat application, Users can talk in real time. i implemented this because i am curious i how distributed systems work, how they coordinate, what problems they faced and the besy way to do it, is by doing it so i started this project. My first intial target is hanlind 10K online users. I have documented my learning jouney and problems i faced in this readme itself.
-
-The backend is distributed & horizontally scalable. Technology used in backend Socket.io, redis(cache & pub/sub to maintain consistency among different servers), haproxy (for loadbalancer), mongodb(for persistence).
+The backend is distributed and horizontally scalable using RabbitMQ for message parsing.In the backend, I'm using Socket.io, Redis (cache), and RabbitMQ (message buffering). The servers don't need to maintain consistency with each other. It is all handled by RabbitMQ Queue Bindings. See [Architecture](#architecture).
 
 ## Features
 
-- Designed for 10K online users
-- Uses rabbitmq to send message.
-- Utilizes bucketing strategy to store, retrieve, and send messages faster and more efficiently
-
-## Before Starting This I Did Not Know
-
-- How RabbitMQ works
-- AMQP Protocol
-- How different distributed systems coordinate.
-- Different Schema design patterns like bucket, tree, approximation, and attribute
-- MongoDB ObjectId contains a timestamp, making them roughly sortable based on creation time, which is suitable for this case.
-
-                    !! Now I know all of these! 😄
+- Supports one-to-one communication and group chats with full data persistence.
+- Uses RabbitMq for message buffering and user sessions tracking.
+- Utilizes bucketing strategy to store, retrieve, and send messages faster and more efficiently.
+- No complex setup to track user sessions.
+- Server don't need to maintain consistency with each other.
 
 ## Architecture
 
 ![Architecture Diagram](images/image.png)
+
+- Every Server Node, Uses its own exclusive queue.
+- When a user connects to a server node, its binds the queue to the exchange by userId.
+- Exchange send the message for a user to every queue binded by its userId.
+- Server then sends the message to the user using websocket.
+- When a node is down, all the queues and bindings are automatically removed, saving resources and all the users are directed to other active nodes by the load balancer.
 
 ## Problems I Faced
 
@@ -42,6 +36,16 @@ Here is the flow of a message from sender to reciever.
 
 3. **Time synchronization for bucketing**:
     - **Problem**: For bucketing to work properly, servers need to sync time.
+
+## Before Starting This I Did Not Know
+
+- How RabbitMQ works
+- AMQP Protocol
+- How different distributed systems coordinate.
+- Different Schema design patterns like bucket, outliers and approximation.
+- MongoDB ObjectId contains a timestamp, making them roughly sortable based on creation time, which is suitable for this case.
+
+                        !! Now I know all of these! 😄
 
 ## Journey - Timeline
 
@@ -79,7 +83,7 @@ Used RabbitMQ for message delivery and Redis for "Server to User" map [**Failed 
 **Jan 9**
 
 Created a queue for each server and bound it to exchange based on userID
-  [**Green Go** - Only problem is having so many bindings, solved this by creating multiple exchanges and partitioning users to them by a simple hash function.]
+[**Green Go** - Only problem is having so many bindings, solved this by creating multiple exchanges and partitioning users to them by a simple hash function.]
 
 **Jan 11**  
 Configured Nginx and WebSockets connection to Nginx, provided server unique ID to make them identifiable.

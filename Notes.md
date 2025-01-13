@@ -11,10 +11,12 @@
 ## Resume
 
 - Can simultaneously handle 10K online users. Benchmarks are available on GitHub.
+- Using nginx as Load Balancer, configured for websockets connection and SSL Termination.
 - Uses Prometheus and Grafana for real-time monitoring of systems.
 - Deployed on AWS.
 - Used bucketing strategy to store, retrieve, and send messages faster and more efficiently.
 - Configured Nginx as a load balancer to handle WebSockets connections.
+
 
 ## Features
 
@@ -26,6 +28,7 @@
 - To configure long polling connection, set timeout in Nginx configuration and also add polling in transport in Socket.io configuration.
 
 ### Monitoring and Logging
+
 - Prometheus: Metrics collection (pull-based, Graphite is push-based).
 - Loki: Log collection.
 - Grafana: For visualization.
@@ -119,6 +122,8 @@ Configured Nginx and WebSockets connection to Nginx, provided server unique ID t
 **Jan 12**  
 Learned about Prometheus-Grafana-Loki for metrics collection, logging, and visualization.
 
+**Jan 13**
+Got the domain for Vibetalk.
 ## Tweets
 
 **Tweet #0**  
@@ -133,7 +138,12 @@ My implementation of bucket in JS. I am using Unix epoch to reduce complexity.
 My chat app schema: users -> channels -> group.
 
 **Tweet #2**  
-After trying different approaches, now I have 5 failed approaches. 5 ways to not implement it and 1 correct way.
+After 3 failed attempts, I have a working and scalable architecture for my distributed web application. Just curious what new challenges will come ahead.
+
+After trying 3 failed approaches to use RabbitMQ for a chat app, my chat app is now finally working.  
+3 different ways to use RabbitMQ, now I have one finally working solution.
+
+I’ve simply discovered three approaches on how not to use RabbitMQ.
 
 **Tweet #3**  
 Read this, it will help you to understand how to design schema efficiently:  
@@ -151,9 +161,3 @@ Learned about HTTP long polling transport, it holds the request until a message 
 **Tweet #5**  
 Now using Prometheus, Grafana, and Loki to monitor logs.
 
-After 3 failed attempts, I have a working and scalable architecture for my distributed web application. Just curious what new challenges will come ahead.
-
-After trying 3 failed approaches to use RabbitMQ for a chat app, my chat app is now finally working.  
-3 different ways to use RabbitMQ, now I have one finally working solution.
-
-I’ve simply discovered three approaches on how not to use RabbitMQ.
