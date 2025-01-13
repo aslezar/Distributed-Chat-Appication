@@ -66,5 +66,11 @@ services:
         depends_on:
             - server1
             - server2
+    prometheus:
+        image: prom/prometheus
+        volumes:
+            - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - "9090:9090"
 volumes:
     vibetalk-data:
