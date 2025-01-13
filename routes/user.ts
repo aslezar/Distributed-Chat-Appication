@@ -1,5 +1,5 @@
 import { Router } from "express"
-import upload from "../utils/imageHandlers/multer"
+import upload from "../utils/image-handlers/multer"
 import {
     getMe,
     updateCompleteProfile,

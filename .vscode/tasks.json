@@ -4,7 +4,7 @@
         {
             "label": "Run Dev Backend",
             "type": "shell",
-            "command": "bash -c 'read -p \"Press y to start backend or any other key to cancel: \" choice && if [[ $choice == \"y\" ]]; then docker compose up -d && docker attach vibetalk-server-1; else echo \"Cancelled\"; fi'",
+            "command": "bash -c 'read -p \"Press y to start backend or any other key to cancel: \" choice && if [[ $choice == \"y\" ]]; then docker compose up -d && docker attach vibetalk-server1-1; else echo \"Cancelled\"; fi'",
             "group": "build",
             "runOptions": {
                 "runOn": "folderOpen"

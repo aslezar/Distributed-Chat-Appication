@@ -7,7 +7,6 @@ import SearchRouter from "./search"
 const router = Router()
 
 router.use("/auth", AuthRouter)
-
 router.use("/public/search", SearchRouter)
 
 router.use(AuthMiddleware)

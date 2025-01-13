@@ -6,8 +6,8 @@ import mongoose from "mongoose"
 import {
     uploadProfileImage as cloudinaryUploadProfileImage,
     deleteProfileImage as cloudinaryDeleteProfileImage,
-} from "../utils/imageHandlers/cloudinary"
-import setAuthTokenCookie from "../utils/setCookie/setAuthToken"
+} from "../utils/image-handlers/cloudinary"
+import setAuthTokenCookie from "../utils/set-cookie/set-auth-token"
 
 const getMe = async (req: Request, res: Response) => {
     const user = await User.findById(req.user.userId).select(
@@ -105,32 +105,9 @@ const deleteProfileImage = async (req: Request, res: Response) => {
     })
 }
 
-// const getGroup = async (req: Request, res: Response) => {
-//     console.log(req.params.groupId)
-//     console.log("You are here")
-
-//     const groupId = req.params.groupId
-//     const userId = req.user.userId
-
-//     const group = await Group.findOne({
-//         _id: groupId,
-//         "members.user": userId,
-//     }).populate("members.user", "name image phoneNo")
-
-//     if (!group)
-//         throw new NotFoundError("Group Not Found or You are not authorized.")
-
-//     return res.status(StatusCodes.OK).json({
-//         data: group,
-//         success: true,
-//         // msg: `Group ${group.name} Fetched Successfully`,
-//     })
-// }
-
 export {
     getMe,
     updateCompleteProfile,
     updateProfileImage,
     deleteProfileImage,
-    // getGroup,
 }

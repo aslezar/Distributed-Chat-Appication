@@ -9,12 +9,12 @@ const onConnection = async (io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
 
     socket.join(socket.user.userId.toString())
     rabbitMq.messageChannel.bindQueue(queueName, "messages", socket.user.userId.toString())
-
-    socket.on(EventsEnum.NewMessage, sendMessage(io, socket, rabbitMq))
-    socket.on(EventsEnum.NewGroup, createGroup(io, socket, rabbitMq));
-    socket.on(EventsEnum.NewChat, createChat(io, socket, rabbitMq));
+    
     socket.on(EventsEnum.GetChannels, getChannels(io, socket));
     socket.on(EventsEnum.GetServerInfo, getServerName(io, socket));
+    socket.on(EventsEnum.NewChat, createChat(io, socket, rabbitMq));
+    socket.on(EventsEnum.NewGroup, createGroup(io, socket, rabbitMq));
+    socket.on(EventsEnum.NewMessage, sendMessage(io, socket, rabbitMq))
 
     socket.on("disconnect", disconnect(io, socket, rabbitMq))
 }

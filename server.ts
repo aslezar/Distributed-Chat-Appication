@@ -14,7 +14,7 @@ import "express-async-errors"
 import dotenv from "dotenv"
 dotenv.config()
 
-import connectDB from "./db/connect"
+import connectDB from "./utils/db"
 
 //Import Routes
 import ApiRoute from "./routes/apiv1"

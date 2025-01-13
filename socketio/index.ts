@@ -3,10 +3,10 @@ import { Server as HttpServer } from "http"
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
 import { ServerOptions, Server as SocketIOServer } from "socket.io"
-import { RabbitMQ, queueName } from "../utils/rabbitmq"
-import { TempUserPayload, UserPayload } from "../types/express"
-import onConnection from "./connect"
 import { EventsEnum } from "../enums"
+import { TempUserPayload, UserPayload } from "../types/express"
+import { RabbitMQ, queueName } from "../utils/rabbitmq"
+import onConnection from "./connect"
 
 export let ioServer: SocketIOServer | null = null
 
