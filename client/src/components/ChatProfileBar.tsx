@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useAppSelector } from "@/hooks"
 import { MyChannelsType } from "@/types"
-import { ArrowLeft, Phone, Video } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import ChatInfo from "./ChatInfo"
 
