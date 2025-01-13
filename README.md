@@ -1,6 +1,6 @@
 # Distributed Chat Application | VibeTalk
 
-The backend is distributed and horizontally scalable using RabbitMQ for message parsing.In the backend, I'm using Socket.io, Redis (cache), and RabbitMQ (message buffering). The servers don't need to maintain consistency with each other. It is all handled by RabbitMQ Queue Bindings. See [Architecture](#architecture).
+The backend is distributed and horizontally scalable using RabbitMQ for message parsing. Technology used in backend Socket.io, Redis (cache), and RabbitMQ (message buffering). The servers don't need to maintain consistency with each other. It is all handled by RabbitMQ Queue Bindings. See [Architecture](#architecture).
 
 ## Features
 
