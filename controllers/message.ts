@@ -6,6 +6,7 @@ import ChatMessage from "../models/message";
 import { NewChat, NewGroup, NewMessage, validatePayload } from "../socketio/validation";
 import { getBucket } from "../utils/buckets";
 import { queueName, RabbitMQ } from "../utils/rabbitmq";
+import redis from "../utils/redis";
 import { serverId } from '../utils/server-id';
 
 function broadcastMessage<T>(rabbitMq: RabbitMQ, members: string[], message: any) {
@@ -13,6 +14,17 @@ function broadcastMessage<T>(rabbitMq: RabbitMQ, members: string[], message: any
     for (const member of members) {
         rabbitMq.messageChannel.publish("messages", member, jsonEvent);
     }
+}
+
+async function cacheData<T>(key: string, callback: () => Promise<T>) {
+    const data = await redis.get(key);
+    if (data) {
+        return JSON.parse(data) as T;
+    }
+    const result = await callback();
+    if (!result) return null;
+    await redis.set(key, JSON.stringify(result), "EX", 60 * 10);
+    return result;
 }
 
 export function sendMessage(io: SocketIOServer, socket: Socket, rabbitMq: RabbitMQ) {
@@ -24,7 +36,12 @@ export function sendMessage(io: SocketIOServer, socket: Socket, rabbitMq: Rabbit
 
             const payload = await validatePayload(data, NewMessage)
 
-            const channel = await Channel.findById(payload.channelId);
+            console.time("Cache Data");
+
+            const channel = await cacheData(payload.channelId, async () => await Channel.findById(payload.channelId));
+
+            console.timeEnd("Cache Data");
+
             // check if part of the channel
             if (channel === null || !channel.members.some((m) => m.userId.toString() === socket.user.userId.toString())) {
                 throw new Error("You are not part of this channel");
