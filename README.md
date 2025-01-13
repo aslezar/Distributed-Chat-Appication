@@ -1,10 +1,15 @@
 # Distributed Chat Application | VibeTalk
 
+The backend is distributed and horiziontally scalable.
+
 This is Distributed Chat application, Users can talk in real time. i implemented this because i am curious i how distributed systems work, how they coordinate, what problems they faced and the besy way to do it, is by doing it so i started this project. My first intial target is hanlind 10K online users. I have documented my learning jouney and problems i faced in this readme itself.
+
+The backend is distributed & horizontally scalable. Technology used in backend Socket.io, redis(cache & pub/sub to maintain consistency among different servers), haproxy (for loadbalancer), mongodb(for persistence).
 
 ## Features
 
 - Designed for 10K online users
+- Uses rabbitmq to send message.
 - Utilizes bucketing strategy to store, retrieve, and send messages faster and more efficiently
 
 ## Before Starting This I Did Not Know
@@ -15,7 +20,7 @@ This is Distributed Chat application, Users can talk in real time. i implemented
 - Different Schema design patterns like bucket, tree, approximation, and attribute
 - MongoDB ObjectId contains a timestamp, making them roughly sortable based on creation time, which is suitable for this case.
 
-                                      !! Now I know all of these! 😄
+                    !! Now I know all of these! 😄
 
 ## Architecture
 
@@ -41,6 +46,7 @@ Here is the flow of a message from sender to reciever.
 ## Journey - Timeline
 
 **Dec 29 - Jan 4**
+
 - Started researching different technologies used in distributed systems, and learned about:
     - Kafka
     - Redis
@@ -48,12 +54,14 @@ Here is the flow of a message from sender to reciever.
     - Nginx
 
 **Jan 4 - Jan 5**
+
 - Set up Docker environment for fast setup
 - Read Discord blogs to understand how they work
 - Read about WhatsApp's use of ejabberd
 - Tried RabbitMQ with a queue for each user [**Failed 1**][Having so many queues caused significant delays during RabbitMQ node restarts.]
 
 **Jan 6**
+
 - Found possible approaches to solve the first two problems
 - Prepared architecture diagram
 - Studied Discord message schema
@@ -61,27 +69,37 @@ Here is the flow of a message from sender to reciever.
 - Learned about MongoDB IDs being sortable and their composition
 
 **Jan 7**
-- Tried RabbitMQ for message and user updates [**Failed 2**][Not ideal if a node goes down, it becomes unaware of who is online]
+
+Tried RabbitMQ for message and user updates [**Failed 2**][Not ideal if a node goes down, it becomes unaware of who is online]
 
 **Jan 8**
-- Used RabbitMQ for message delivery and Redis for "Server to User" map [**Failed 3**][Complexity is too high to handle each user's presence. Redis will become a single point of failure and it will require three different stacks (Server, RabbitMQ, Redis) to scale up together]
+
+Used RabbitMQ for message delivery and Redis for "Server to User" map [**Failed 3**][Complexity is too high to handle each user's presence. Redis will become a single point of failure and it will require three different stacks (Server, RabbitMQ, Redis) to scale up together]
 
 **Jan 9**
-- Created a queue for each server and bound it to exchange based on userID
-    [**Green Go** - Only problem is having so many bindings, solved this by creating multiple exchanges and partitioning users to them by a simple hash function.]
-    ## Quickstart
 
-    To keep the setup simple, I will provide only one way of doing it. Clone the repo and spin up the Docker container:
+Created a queue for each server and bound it to exchange based on userID
+  [**Green Go** - Only problem is having so many bindings, solved this by creating multiple exchanges and partitioning users to them by a simple hash function.]
 
-    ```bash
-    docker compose up --build -d
-    ```
+**Jan 11**  
+Configured Nginx and WebSockets connection to Nginx, provided server unique ID to make them identifiable.
 
-    Start the Frontend:
+**Jan 12**  
+Learned about Prometheus-Grafana-Loki for metrics collection, logging, and visualization.
 
-    ```bash
-    cd client && npm i && npm run dev
-    ```
+## Quickstart
+
+To keep the setup simple, I will provide only one way of doing it. Clone the repo and spin up the Docker container:
+
+```bash
+docker compose up --build -d
+```
+
+Start the Frontend:
+
+```bash
+cd client && npm i && npm run dev
+```
 
 ## Screenshots
 
