@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAppSelector } from "@/hooks"
 import { MessageType, MyChannelsType, MyContactType } from "@/types"
 import moment from "moment"
+import { useEffect, useRef } from "react"
 
 const nameInitials = (name: string) =>
     name
@@ -13,8 +14,14 @@ const nameInitials = (name: string) =>
 
 export default function Messages({ channel }: { channel: MyChannelsType }) {
     const myUserId = useAppSelector((state) => state.user.user._id)
-
+    const dummyDivRef = useRef<HTMLDivElement>(null)
     const messages = channel.messages
+
+    useEffect(() => {
+        if (dummyDivRef.current) {
+            dummyDivRef.current.scrollIntoView({ behavior: "instant" })
+        }
+    }, [channel.messages])
 
     return (
         <ScrollArea className="max-h-[calc(100dvh-120px)] flex-1 p-4 flex flex-col gap-4">
@@ -33,6 +40,7 @@ export default function Messages({ channel }: { channel: MyChannelsType }) {
                     />
                 ),
             )}
+            <div ref={dummyDivRef} />
         </ScrollArea>
     )
 }

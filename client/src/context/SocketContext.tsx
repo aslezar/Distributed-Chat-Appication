@@ -73,8 +73,15 @@ const SocketContextProvider = ({ children }: { children: ReactNode }) => {
                         return
                     }
                     // save message
-                    channel.messages?.push(message)
-                    setMyChannels(() => [...myChannels])
+                    setMyChannels((prev) => {
+                        const newChannels = prev.map((ch) => {
+                            if (ch._id === message.channelId) {
+                                ch.messages = [...ch.messages, message]
+                            }
+                            return ch
+                        })
+                        return newChannels
+                    })
                     if (message.senderId === user._id) return
                     if (selectedChannel?._id === message.channelId) return
                     console.log("Showing toast msg")
