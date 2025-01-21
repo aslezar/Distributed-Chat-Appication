@@ -36,13 +36,8 @@ const server: http.Server = http.createServer(app)
 const PORT: string | number = process.env.PORT || 5000
 app.set("trust proxy", 1)
 
-const allowedOrigins = [
-    process.env.NODE_ENV === "production"
-        ? (process.env.RENDER_EXTERNAL_URL as string)
-        : "http://localhost:5173",
-    "http://192.168.1.4:5173",
-    "https://admin.socket.io",
-]
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? []
+
 if (process.env.NODE_ENV === "development")
     allowedOrigins.push("https://admin.socket.io" as string)
 
