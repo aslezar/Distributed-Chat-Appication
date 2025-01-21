@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { User, Channel, Message } from "./models"
-import connectDB from "./db/connect"
+import connectDB from "./utils/db"
 import dotenv from "dotenv"
 import { Types } from "mongoose"
 import bcrypt from "bcryptjs"
