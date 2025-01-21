@@ -17,7 +17,6 @@
 - Used bucketing strategy to store, retrieve, and send messages faster and more efficiently.
 - Configured Nginx as a load balancer to handle WebSockets connections.
 
-
 ## Features
 
 - This design is for 10K online users.
@@ -40,6 +39,20 @@
 - Quorum queues have slightly more latency than classic queues.
 
 ## Notes
+
+### CSS Scrollbar
+
+```css
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+}
+```
 
 - Use Discord message schema.
 
@@ -124,6 +137,7 @@ Learned about Prometheus-Grafana-Loki for metrics collection, logging, and visua
 
 **Jan 13**
 Got the domain for Vibetalk.
+
 ## Tweets
 
 **Tweet #0**  
@@ -160,4 +174,3 @@ Learned about HTTP long polling transport, it holds the request until a message 
 
 **Tweet #5**  
 Now using Prometheus, Grafana, and Loki to monitor logs.
-
