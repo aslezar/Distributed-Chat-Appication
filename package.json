@@ -9,6 +9,7 @@
         "dev": "nodemon --ignore 'client/*' server.ts",
         "format": "prettier --write . && cd client && prettier --write .",
         "seeder": "ts-node seeder.ts",
+        "seed-prod": "ts-node seeder.prod.ts",
         "get-blogs-by-each-user": "ts-node ./DBseeder/dev-utils/get-blogs-by-each-user.ts"
     },
     "repository": {

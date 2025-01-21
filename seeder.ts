@@ -1,10 +1,9 @@
-import mongoose from "mongoose"
-import { User, Channel, Message } from "./models"
-import connectDB from "./utils/db"
-import dotenv from "dotenv"
-import { Types } from "mongoose"
 import bcrypt from "bcryptjs"
+import dotenv from "dotenv"
+import mongoose, { Types } from "mongoose"
 import { RolesEnum } from "./enums"
+import { Channel, Message, User } from "./models"
+import connectDB from "./utils/db"
 
 dotenv.config()
 
