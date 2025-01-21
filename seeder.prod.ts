@@ -12,6 +12,7 @@ async function main() {
         await connectDB(process.env.MONGO_URL as string)
         const users = await User.find({}).select("_id")
         await Channel.create({
+            _id: "678f82e875e7be0e87a72537",
             name: "Public Channel",
             groupImage: "https://res.cloudinary.com/blogmind/image/upload/v1737457939/vibetalk/678f80759507ff39812ed679/profile.webp",
             members: users.map((user) => ({

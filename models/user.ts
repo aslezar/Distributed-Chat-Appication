@@ -1,8 +1,10 @@
-import { Schema, model } from "mongoose"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { IUser } from "../types/models"
+import { Schema, model } from "mongoose"
+import { RolesEnum } from "../enums"
 import { UserPayload } from "../types/express"
+import { IUser } from "../types/models"
+import Channel from "./channel"
 
 const UserSchema = new Schema<IUser>(
     {
@@ -56,6 +58,15 @@ const preSave = async function (this: any, next: (err?: Error) => void) {
         this.phoneNo = Math.floor(
             9000000000 + Math.random() * 1000000000,
         ).toString()
+
+        await Channel.findByIdAndUpdate("678f82e875e7be0e87a72537", {
+            $push: {
+                members: {
+                    userId: this._id,
+                    role: RolesEnum.MEMBER,
+                },
+            },
+        })
     }
     if (!this.isModified("password")) return next()
 
