@@ -20,6 +20,16 @@ The backend is distributed and horizontally scalable using RabbitMQ for message 
 - Server then sends the message to the user using websocket.
 - When a node is down, all the queues and bindings are automatically removed, saving resources and all the users are directed to other active nodes by the load balancer.
 
+### Message Flow
+
+1. User1 → Server1
+2. Server1 → RabbitMQ Exchange
+3. RabbitMQ Exchange → Server2's Queue
+4. Server2's Queue → Server2
+5. Server2 → User2
+
+![Message Handling Diagram](images/image2.png)
+
 ## Problems I Faced
 
 Majorly these 2 are the main problems i faced.
@@ -31,21 +41,16 @@ Majorly these 2 are the main problems i faced.
 2. How to know which server is user connected to?
     - Solved it by using a RabbitMQ queue and exchange. For user 1 on server 2, I bind the server queue to the exchange based on userId. I didn't want to add more stack like Redis to create a "Server to User" table, as this would add more complexity. So I came up with this solution. After discussing the potential performance impact of having so many bindings with the RabbitMQ team, i finalized this architecture.
 
-Here is the flow of a message from sender to reciever.
-![Message Handling Diagram](images/image2.png)
-
-3. **Time synchronization for bucketing**:
-    - **Problem**: For bucketing to work properly, servers need to sync time.
-
 ## Before Starting This I Did Not Know
 
 - How RabbitMQ works
 - AMQP Protocol
-- How different distributed systems coordinate.
+- How distributed systems coordinate.
 - Different Schema design patterns like bucket, outliers and approximation.
 - MongoDB ObjectId contains a timestamp, making them roughly sortable based on creation time, which is suitable for this case.
+- How DNS Records works.
 
-                        !! Now I know all of these! 😄
+                          !! Now I know all of these! 😄
 
 ## Journey - Timeline
 
@@ -90,6 +95,18 @@ Configured Nginx and WebSockets connection to Nginx, provided server unique ID t
 
 **Jan 12**  
 Learned about Prometheus-Grafana-Loki for metrics collection, logging, and visualization.
+
+**Jan 13**  
+Got the domain for Vibetalk.
+
+**Jan 21**  
+Deployed Complete Tech Stack:
+
+- RabbitMQ - [CloudAQMP](https://www.cloudamqp.com/)
+- Redis - Render Redis instance
+- MongoDb - MongoDB Atlas
+- Server - Render
+Learnt about DNS Records
 
 ## Quickstart
 

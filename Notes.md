@@ -38,6 +38,12 @@
 - Classic queues are limited by the node capacity itself and are not replicated to other nodes unless mirroring is explicitly configured.
 - Quorum queues have slightly more latency than classic queues.
 
+### DNS Records
+- **A Record**: Maps domain to IPv4 address
+- **AAAA Record**: Maps domain to IPv6 address
+- **CNAME Record**: Maps domain to another domain
+- **MX Record**: Directs emails to mail server
+
 ## Notes
 
 ### CSS Scrollbar
@@ -174,3 +180,11 @@ Learned about HTTP long polling transport, it holds the request until a message 
 
 **Tweet #5**  
 Now using Prometheus, Grafana, and Loki to monitor logs.
+
+
+**Tweet #6**
+### DNS Records
+- **A Record**: Maps domain to IPv4 address
+- **AAAA Record**: Maps domain to IPv6 address
+- **CNAME Record**: Maps domain to another domain
+- **MX Record**: Directs emails to mail server
