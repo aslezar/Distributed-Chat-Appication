@@ -23,7 +23,7 @@ const connect = async () => {
             connection.createChannel(),
         ]);
 
-        await messageChannel.prefetch(1);
+        await messageChannel.prefetch(parseInt(process.env.MESSAGE_CONSUME_PREFETCH || "100"));
 
         messageChannel.assertExchange("messages", "direct", { durable: true });
         messageChannel.assertQueue(queueName, { exclusive: true, durable: true, autoDelete: true })
