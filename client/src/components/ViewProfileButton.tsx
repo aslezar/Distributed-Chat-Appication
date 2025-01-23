@@ -15,7 +15,7 @@ import { useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { logout, updateName, updateProfileImage } from "../features/userSlice"
 import { useAppDispatch, useAppSelector } from "../hooks"
-import ModeToggle from "./MoodToggle"
+import ModeToggle from "./ModeToggle"
 import { Label } from "./ui/label"
 
 export default function ViewProfileButton({

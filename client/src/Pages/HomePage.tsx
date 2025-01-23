@@ -1,15 +1,8 @@
+import Features from "@/components/Features"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import emailjs from "@emailjs/browser"
-import {
-    MessageCircle,
-    Paperclip,
-    Settings,
-    Signal,
-    Users,
-    Video,
-} from "lucide-react"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
@@ -51,7 +44,7 @@ export default function Component() {
                             <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
                                 Chat with friends, family, and colleagues in
                                 real-time. Our app offers group chats, direct
-                                messages, and audio/video calls.
+                                messages.
                             </p>
                             <div className="space-x-4">
                                 <Button onClick={() => navigate("/sign-up")}>
@@ -78,80 +71,7 @@ export default function Component() {
                             </p>
                         </div>
                     </div>
-                    <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3 animate-fade-in">
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <Users className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    Group Chats
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Create and join group chats to collaborate with
-                                your team or connect with friends.
-                            </p>
-                        </div>
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <MessageCircle className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    Direct Messages
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Send private messages to individual users for
-                                one-on-one conversations.
-                            </p>
-                        </div>
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <Video className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    Audio & Video Calls
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Conduct high-quality audio and video calls with
-                                your contacts.
-                            </p>
-                        </div>
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <Paperclip className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    File Sharing
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Share files, documents, and media with your
-                                contacts securely.
-                            </p>
-                        </div>
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <Signal className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    Notifications
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Stay up-to-date with real-time notifications for
-                                new messages and activity.
-                            </p>
-                        </div>
-                        <div className="grid gap-1">
-                            <div className="flex items-center gap-2">
-                                <Settings className="h-6 w-6 text-gray-900 dark:text-gray-50" />
-                                <h3 className="text-lg font-bold">
-                                    Customization
-                                </h3>
-                            </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Personalize your chat experience with custom
-                                themes, emojis, and more.
-                            </p>
-                        </div>
-                    </div>
+                    <Features />
                 </div>
             </section>
             <section

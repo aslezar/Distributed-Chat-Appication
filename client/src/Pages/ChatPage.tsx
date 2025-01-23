@@ -63,7 +63,7 @@ export default function ChatPage() {
                         to="#"
                     >
                         <MessageCircle className="h-6 w-6" />
-                        <span>Vibe Talk</span>
+                        <span>VibeTalk</span>
                     </Link>
                     <div className="flex gap-2">
                         <AddChat />

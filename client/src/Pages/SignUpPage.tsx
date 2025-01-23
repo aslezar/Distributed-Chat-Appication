@@ -29,18 +29,15 @@ export default function Component() {
 
     return (
         <div className="w-full lg:grid lg:min-h-[800px] lg:grid-cols-2 xl:min-h-[900px]">
-            <div className="hidden bg-gray-100 lg:block dark:bg-gray-800">
-                <img
-                    alt="Login Image"
-                    className="h-full w-full object-cover"
-                    height="1080"
-                    src="/placeholder.svg"
-                    style={{
-                        aspectRatio: "1920/1080",
-                        objectFit: "cover",
-                    }}
-                    width="1920"
-                />
+            <div className="hidden lg:block bg-white dark:bg-gray-950">
+                <div className="flex flex-col items-center justify-center h-full space-y-4 p-8">
+                    <h1 className="text-6xl font-bold font-serif tracking-wide text-center">
+                        VibeTalk
+                    </h1>
+                    <p className="text-lg text-gray-600 dark:text-gray-400 text-center">
+                        Distributed Chat Application for real time communication.
+                    </p>
+                </div>
             </div>
             <div className="flex flex-col items-center justify-center py-12">
                 <div className="mx-auto w-[350px] space-y-6 relative">
